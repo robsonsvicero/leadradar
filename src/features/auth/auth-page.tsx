@@ -82,13 +82,21 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
 
       if (isRegister) {
         const registerValues = values as RegisterFormValues
-        await signUp({
+        const newUser = await signUp({
           email: registerValues.email,
           password: registerValues.password,
           fullName: registerValues.fullName,
         })
-        setSuccess('Conta criada com sucesso. Você já pode entrar no dashboard.')
-        navigate('/dashboard')
+        if (newUser) {
+          setSuccess(
+            newUser.accessStatus === 'approved'
+              ? 'Conta criada e aprovada. Redirecionando para o aplicativo.'
+              : 'Cadastro recebido. Você poderá entrar depois que um administrador aprovar sua conta.',
+          )
+          if (newUser.accessStatus === 'approved') navigate('/dashboard')
+        } else {
+          setSuccess('Conta criada. Confirme seu e-mail; o acesso também depende da aprovação de um administrador.')
+        }
         return
       }
 
@@ -116,7 +124,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
             {isReset
               ? 'Informe o e-mail da conta para receber o link de recuperação.'
               : isRegister
-                ? 'Configure sua organização e comece a prospectar com IA.'
+                ? 'Crie sua conta. O acesso será liberado após a aprovação do administrador.'
                 : 'Acesse sua workspace e continue seu pipeline.'}
           </CardDescription>
         </CardHeader>

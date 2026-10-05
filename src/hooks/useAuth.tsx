@@ -26,7 +26,7 @@ type AuthContextValue = {
   user: AppUser | null
   isLoading: boolean
   signIn: (input: SignInInput) => Promise<void>
-  signUp: (input: SignUpInput) => Promise<void>
+  signUp: (input: SignUpInput) => Promise<AppUser | null>
   resetPassword: (email: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(async ({ email, password, fullName }: SignUpInput) => {
     const { user: nextUser } = await authService.signUp(email, password, fullName)
     setUser(nextUser)
+    return nextUser
   }, [])
 
   const resetPassword = useCallback(async (email: string) => {

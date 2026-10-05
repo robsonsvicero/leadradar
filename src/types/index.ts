@@ -4,6 +4,8 @@ export type AppUser = {
   full_name?: string | null
   avatar_url?: string | null
   role?: 'owner' | 'admin' | 'member'
+  accessStatus?: 'pending' | 'approved' | 'rejected'
+  isPlatformAdmin?: boolean
 }
 
 export type Organization = {

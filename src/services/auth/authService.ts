@@ -11,6 +11,35 @@ export type SessionResponse = {
   access_token: string | null
 }
 
+async function getAuthenticatedUser(user: {
+  id: string
+  email?: string
+  user_metadata?: Record<string, unknown>
+}): Promise<AppUser> {
+  if (!supabase) {
+    throw new Error('Autenticação Supabase não configurada.')
+  }
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('access_status, is_platform_admin')
+    .eq('id', user.id)
+    .single()
+
+  if (error) {
+    throw new Error(`Não foi possível verificar a aprovação da conta: ${error.message}`)
+  }
+
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    full_name: typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null,
+    avatar_url: typeof user.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : null,
+    accessStatus: profile.access_status,
+    isPlatformAdmin: profile.is_platform_admin,
+  }
+}
+
 function isDemoAccountCredentials(email: string, password: string) {
   return appEnv.demoAuthEnabled &&
     (!supabase || appEnv.prospectingMockMode) &&
@@ -27,11 +56,13 @@ function requireSupabaseForRealAuth() {
 export const authService = {
   async signIn(email: string, password: string): Promise<SessionResponse> {
     if (isDemoAccountCredentials(email, password)) {
-      const user = {
+      const user: AppUser = {
         id: 'demo-user',
         email: DEMO_ACCOUNT_EMAIL,
         full_name: 'Usuário demo',
         avatar_url: null,
+        accessStatus: 'approved',
+        isPlatformAdmin: false,
       }
 
       localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(user))
@@ -47,14 +78,7 @@ export const authService = {
       }
 
       return {
-        user: data.user
-          ? {
-              id: data.user.id,
-              email: data.user.email ?? '',
-              full_name: data.user.user_metadata?.full_name ?? null,
-              avatar_url: data.user.user_metadata?.avatar_url ?? null,
-            }
-          : null,
+        user: data.user ? await getAuthenticatedUser(data.user) : null,
         access_token: data.session?.access_token ?? null,
       }
     }
@@ -65,11 +89,13 @@ export const authService = {
 
   async signUp(email: string, password: string, fullName?: string): Promise<SessionResponse> {
     if (isDemoAccountCredentials(email, password)) {
-      const user = {
+      const user: AppUser = {
         id: 'demo-user',
         email: DEMO_ACCOUNT_EMAIL,
         full_name: fullName ?? 'Usuário demo',
         avatar_url: null,
+        accessStatus: 'approved',
+        isPlatformAdmin: false,
       }
 
       localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(user))
@@ -93,14 +119,7 @@ export const authService = {
       }
 
       return {
-        user: data.user
-          ? {
-              id: data.user.id,
-              email: data.user.email ?? '',
-              full_name: data.user.user_metadata?.full_name ?? fullName ?? null,
-              avatar_url: data.user.user_metadata?.avatar_url ?? null,
-            }
-          : null,
+        user: data.session && data.user ? await getAuthenticatedUser(data.user) : null,
         access_token: data.session?.access_token ?? null,
       }
     }
@@ -142,14 +161,7 @@ export const authService = {
       }
 
       return {
-        user: data.session?.user
-          ? {
-              id: data.session.user.id,
-              email: data.session.user.email ?? '',
-              full_name: data.session.user.user_metadata?.full_name ?? null,
-              avatar_url: data.session.user.user_metadata?.avatar_url ?? null,
-            }
-          : null,
+        user: data.session?.user ? await getAuthenticatedUser(data.session.user) : null,
         access_token: data.session?.access_token ?? null,
       }
     }
@@ -161,7 +173,12 @@ export const authService = {
       return { user: null, access_token: null }
     }
 
-    const user = JSON.parse(raw) as AppUser
+    const storedUser = JSON.parse(raw) as AppUser
+    const user: AppUser = {
+      ...storedUser,
+      accessStatus: storedUser.accessStatus ?? 'approved',
+      isPlatformAdmin: false,
+    }
     return { user, access_token: 'demo-access-token' }
   },
 }

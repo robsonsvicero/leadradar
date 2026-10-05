@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, CircleAlert, Pencil, Plus, Save, ShieldCheck, ToggleLeft, ToggleRight, X } from 'lucide-react'
+import { Check, CircleAlert, Pencil, Plus, Save, ShieldCheck, ToggleLeft, ToggleRight, UserCheck, UserX, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import { Alert } from '../../components/ui/alert'
@@ -23,6 +23,8 @@ import {
   type SaveServiceInput,
 } from '../../services/ai/organizationAISettingsService'
 import { defaultActionScoreWeights, type ActionScoreWeights } from '../../services/ai/scoring'
+import { useAuth } from '../../hooks/useAuth'
+import { decideUserApproval, getPendingUsers } from '../../services/auth/userApprovalService'
 
 const LIST_FIELD_HINT = 'Separe os itens por vírgula ou linha.'
 
@@ -86,6 +88,7 @@ function listValue(value: string[]) {
 }
 
 export function SettingsPage() {
+  const { user } = useAuth()
   const [selectedOrganizationId, setSelectedOrganizationId] = useState('')
   const [newOrganizationName, setNewOrganizationName] = useState('')
   const [newOrganizationSlug, setNewOrganizationSlug] = useState('')
@@ -119,6 +122,8 @@ export function SettingsPage() {
           Defina o que você oferece, quais empresas quer atender e como a IA deve representar sua abordagem.
         </p>
       </header>
+
+      {user?.isPlatformAdmin ? <UserApprovalsCard /> : null}
 
       <Card>
         <CardHeader>
@@ -214,6 +219,80 @@ export function SettingsPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function UserApprovalsCard() {
+  const queryClient = useQueryClient()
+  const pendingUsers = useQuery({
+    queryKey: ['pending-user-approvals'],
+    queryFn: getPendingUsers,
+    retry: false,
+  })
+  const decision = useMutation({
+    mutationFn: ({ userId, status }: { userId: string; status: 'approved' | 'rejected' }) =>
+      decideUserApproval(userId, status),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['pending-user-approvals'] })
+    },
+  })
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Aprovação de novos usuários</CardTitle>
+        <CardDescription>Revise os cadastros antes de liberar o acesso ao aplicativo.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {pendingUsers.isLoading ? <Skeleton className="h-16 w-full" /> : null}
+        {pendingUsers.isError ? (
+          <Alert className="border-red-200 bg-red-50 text-red-800">
+            {pendingUsers.error.message}
+          </Alert>
+        ) : null}
+        {decision.isError ? (
+          <Alert className="border-red-200 bg-red-50 text-red-800">
+            {decision.error.message}
+          </Alert>
+        ) : null}
+        {pendingUsers.data?.length === 0 ? (
+          <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">Não há cadastros aguardando aprovação.</p>
+        ) : null}
+        {pendingUsers.data?.map((pendingUser) => (
+          <div
+            key={pendingUser.id}
+            className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="min-w-0">
+              <p className="truncate font-medium text-slate-900">{pendingUser.full_name || 'Nome não informado'}</p>
+              <p className="truncate text-sm text-slate-600">{pendingUser.email}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Cadastro em {new Date(pendingUser.created_at).toLocaleDateString('pt-BR')}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <Button
+                type="button"
+                onClick={() => decision.mutate({ userId: pendingUser.id, status: 'approved' })}
+                disabled={decision.isPending}
+              >
+                <UserCheck aria-hidden="true" className="h-4 w-4" />
+                Aprovar
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => decision.mutate({ userId: pendingUser.id, status: 'rejected' })}
+                disabled={decision.isPending}
+              >
+                <UserX aria-hidden="true" className="h-4 w-4" />
+                Recusar
+              </Button>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   )
 }
 

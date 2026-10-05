@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 
 import { AppShell } from '../components/layout/app-shell'
+import { Button } from '../components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { featureFlags } from '../config/featureFlags'
 import { useAuth } from '../hooks/useAuth'
 
@@ -24,7 +26,7 @@ const ProposalsPage = lazy(() => import('../features/proposals/proposals-page').
 const CadencesPage = lazy(() => import('../features/cadences/cadences-page').then((module) => ({ default: module.CadencesPage })))
 
 function ProtectedLayout() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, logout } = useAuth()
 
   if (isLoading) {
     return (
@@ -36,6 +38,30 @@ function ProtectedLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (user.accessStatus !== 'approved') {
+    const rejected = user.accessStatus === 'rejected'
+
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle>{rejected ? 'Acesso não aprovado' : 'Aguardando aprovação'}</CardTitle>
+            <CardDescription>
+              {rejected
+                ? 'Um administrador recusou este cadastro. Entre em contato com a equipe responsável se acredita que isso foi um engano.'
+                : 'Seu cadastro foi recebido e está aguardando a análise de um administrador. Após a aprovação, entre novamente para acessar o aplicativo.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button type="button" variant="outline" onClick={() => void logout()}>
+              Sair
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

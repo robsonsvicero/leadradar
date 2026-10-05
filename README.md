@@ -129,6 +129,8 @@ Na ficha de uma empresa associada a um lead, a inteligência comercial e a gera�
 
 O fluxo real de prospecção foi validado com uma conta Supabase em 04/10/2026. Antes de produção, aplique e valide a migration `20261004250000_production_security_foundations.sql` em staging; o checklist de prontidão registra todos os gates ainda pendentes.
 
+Para exigir aprovação antes do acesso ao app, aplique `supabase/migrations/20261005100000_user_registration_approval.sql` no SQL Editor do Supabase. Em bases existentes, todos os perfis atuais permanecem aprovados e o perfil mais antigo se torna administrador global; em uma base vazia, o primeiro cadastro recebe esse papel automaticamente. Os cadastros seguintes ficam pendentes e só o administrador global pode aprovar ou recusar em Configurações. A migration atualiza a função `handle_new_user` e a função `create_organization`; aplique-a depois das migrations anteriores.
+
 Consulte:
 
 - [docs/PRODUCTION_AUDIT.md](./docs/PRODUCTION_AUDIT.md) para riscos, correções e backlog verificado
