@@ -89,6 +89,7 @@ export function AppRoutes() {
           <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <AuthPage mode="login" />} />
           <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <AuthPage mode="register" />} />
           <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" replace /> : <AuthPage mode="forgot-password" />} />
+          <Route path="/set-password" element={<AuthPage mode="set-password" />} />
 
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

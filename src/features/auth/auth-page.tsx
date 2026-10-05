@@ -13,7 +13,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { appEnv } from '../../config/env'
 import { isSupabaseConfigured } from '../../lib/supabase/client'
 
-type AuthMode = 'login' | 'register' | 'forgot-password'
+type AuthMode = 'login' | 'register' | 'forgot-password' | 'set-password'
 
 type LoginFormValues = {
   email: string
@@ -28,6 +28,11 @@ type RegisterFormValues = {
 
 type ResetFormValues = {
   email: string
+}
+
+type SetPasswordFormValues = {
+  password: string
+  confirmPassword: string
 }
 
 const loginSchema = z.object({
@@ -45,29 +50,43 @@ const resetSchema = z.object({
   email: z.string().email('Informe um e-mail válido.'),
 })
 
+const setPasswordSchema = z.object({
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
+  confirmPassword: z.string().min(8, 'Confirme a senha.'),
+}).refine((values) => values.password === values.confirmPassword, {
+  path: ['confirmPassword'],
+  message: 'As senhas não são iguais.',
+})
+
 export function AuthPage({ mode }: { mode: AuthMode }) {
   const navigate = useNavigate()
-  const { signIn, signUp, resetPassword } = useAuth()
+  const { signIn, signUp, resetPassword, updatePassword } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
-  const form = useForm<LoginFormValues | RegisterFormValues | ResetFormValues>({
+  const form = useForm<LoginFormValues | RegisterFormValues | ResetFormValues | SetPasswordFormValues>({
     resolver: zodResolver(
-      mode === 'register' ? registerSchema : mode === 'forgot-password' ? resetSchema : loginSchema,
+      mode === 'register' ? registerSchema
+        : mode === 'forgot-password' ? resetSchema
+          : mode === 'set-password' ? setPasswordSchema
+            : loginSchema,
     ) as never,
     defaultValues: mode === 'register'
       ? ({ email: '', password: '', fullName: '' } satisfies RegisterFormValues)
       : mode === 'forgot-password'
         ? ({ email: '' } satisfies ResetFormValues)
+        : mode === 'set-password'
+          ? ({ password: '', confirmPassword: '' } satisfies SetPasswordFormValues)
         : ({ email: '', password: '' } satisfies LoginFormValues),
   })
 
   const isRegister = mode === 'register'
   const isReset = mode === 'forgot-password'
+  const isSetPassword = mode === 'set-password'
 
-  const onSubmit = async (values: LoginFormValues | RegisterFormValues | ResetFormValues) => {
+  const onSubmit = async (values: LoginFormValues | RegisterFormValues | ResetFormValues | SetPasswordFormValues) => {
     try {
       setError(null)
       setSuccess(null)
@@ -77,6 +96,14 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
         const resetValues = values as ResetFormValues
         await resetPassword(resetValues.email)
         setSuccess('Se houver uma conta registrada, o e-mail foi enviado com instruções de recuperação.')
+        return
+      }
+
+      if (isSetPassword) {
+        const passwordValues = values as SetPasswordFormValues
+        await updatePassword(passwordValues.password)
+        setSuccess('Senha definida. Redirecionando para sua organização.')
+        navigate('/dashboard')
         return
       }
 
@@ -118,14 +145,19 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
             <UserPlus className="h-6 w-6" />
           </div>
           <CardTitle className="text-2xl text-slate-900">
-            {isReset ? 'Recuperar senha' : isRegister ? 'Criar conta' : 'Entrar no Lead Radar'}
+            {isReset ? 'Recuperar senha'
+              : isSetPassword ? 'Definir senha'
+                : isRegister ? 'Criar conta'
+                  : 'Entrar no Lead Radar'}
           </CardTitle>
           <CardDescription>
             {isReset
               ? 'Informe o e-mail da conta para receber o link de recuperação.'
-              : isRegister
-                ? 'Crie sua conta. O acesso será liberado após a aprovação do administrador.'
-                : 'Acesse sua workspace e continue seu pipeline.'}
+              : isSetPassword
+                ? 'Use o convite recebido por e-mail para cadastrar a senha da sua organização.'
+                : isRegister
+                  ? 'Crie sua conta. O acesso será liberado após a aprovação do administrador.'
+                  : 'Acesse sua workspace e continue seu pipeline.'}
           </CardDescription>
         </CardHeader>
 
@@ -143,6 +175,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               </div>
             ) : null}
 
+            {!isSetPassword ? (
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700" htmlFor="email">
                 E-mail
@@ -155,6 +188,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                 <p className="text-xs text-red-600">{form.formState.errors.email.message}</p>
               ) : null}
             </div>
+            ) : null}
 
             {!isReset ? (
               <div className="space-y-2">
@@ -162,7 +196,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                   <label className="text-sm font-medium text-slate-700" htmlFor="password">
                     Senha
                   </label>
-                  {!isRegister ? (
+                  {!isRegister && !isSetPassword ? (
                     <Link to="/forgot-password" className="text-xs text-sky-600 hover:underline">
                       Esqueci a senha
                     </Link>
@@ -175,7 +209,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                     type={isPasswordVisible ? 'text' : 'password'}
                     className="pl-10 pr-11"
                     placeholder="••••••••"
-                    autoComplete={isRegister ? 'new-password' : 'current-password'}
+                    autoComplete={isRegister || isSetPassword ? 'new-password' : 'current-password'}
                     {...form.register('password')}
                   />
                   <button
@@ -193,16 +227,36 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                 ) : null}
               </div>
             ) : null}
+            {isSetPassword ? (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700" htmlFor="confirmPassword">
+                  Confirmar senha
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type={isPasswordVisible ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  {...form.register('confirmPassword')}
+                />
+                {'confirmPassword' in form.formState.errors && form.formState.errors.confirmPassword ? (
+                  <p className="text-xs text-red-600">{form.formState.errors.confirmPassword.message}</p>
+                ) : null}
+              </div>
+            ) : null}
 
             {error ? <Alert>{error}</Alert> : null}
             {success ? <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">{success}</Alert> : null}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Aguarde...' : isReset ? 'Enviar link' : isRegister ? 'Criar conta' : 'Entrar'}
+              {isSubmitting ? 'Aguarde...'
+                : isReset ? 'Enviar link'
+                  : isSetPassword ? 'Salvar senha'
+                    : isRegister ? 'Criar conta'
+                      : 'Entrar'}
               {!isSubmitting ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
             </Button>
 
-            {!isReset && !isRegister && appEnv.demoAuthEnabled &&
+            {!isReset && !isRegister && !isSetPassword && appEnv.demoAuthEnabled &&
             (!isSupabaseConfigured || appEnv.prospectingMockMode) ? (
               <Button
                 type="button"
@@ -222,11 +276,18 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
           </form>
 
           <div className="mt-6 flex items-center justify-center gap-2 text-sm text-slate-500">
-            {isRegister ? 'Já possui conta?' : 'Ainda não tem conta?'}
-            <Link to={isRegister ? '/login' : '/register'} className="font-medium text-sky-600 hover:underline">
-              {isRegister ? 'Entrar' : 'Criar uma conta'}
+            {isRegister ? 'Já possui conta?' : isSetPassword || isReset ? 'Já possui senha?' : 'Ainda não tem conta?'}
+            <Link to={isRegister || isSetPassword || isReset ? '/login' : '/register'} className="font-medium text-sky-600 hover:underline">
+              {isRegister || isSetPassword || isReset ? 'Entrar' : 'Criar uma conta'}
             </Link>
           </div>
+          {!isRegister && !isReset && !isSetPassword ? (
+            <div className="mt-3 text-center text-sm">
+              <Link to="/set-password" className="font-medium text-sky-700 underline underline-offset-4 hover:text-sky-900">
+                Recebi um convite e preciso definir minha senha
+              </Link>
+            </div>
+          ) : null}
 
           <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
             <CheckCircle2 className="h-4 w-4" />

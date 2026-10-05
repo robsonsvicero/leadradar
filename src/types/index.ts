@@ -11,6 +11,11 @@ export type AppUser = {
 export type Organization = {
   id: string
   name: string
+  address?: string | null
+  email?: string | null
+  whatsapp?: string | null
+  admin_user_id?: string | null
+  admin_invite_sent_at?: string | null
   created_at: string
   updated_at: string
 }

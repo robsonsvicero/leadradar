@@ -17,10 +17,11 @@ O frontend foi planejado para hospedagem estática na Hostinger; Supabase fornec
 4. Aplique migrations em staging e execute testes Auth/RLS/prospecção.
 5. Configure `GOOGLE_PLACES_API_KEY`, `OPENAI_API_KEY` quando aplicável e demais secrets como secrets das Supabase Edge Functions.
 6. Faça deploy das funções existentes e da `health`; exemplo com Supabase CLI instalado e projeto linkado: `supabase functions deploy prospecting-search`, `supabase functions deploy health`.
-7. Para Hostinger, execute `npm run build` e publique o conteúdo de `dist/`; `public/.htaccess` configura fallback SPA em Apache.
-8. Para Vercel, importe o projeto, configure as variáveis por Development/Preview/Production e use `npm run build` com `dist` como pasta de saída.
-9. Configure domínio e SSL no host, bem como redirect URLs de Auth no Supabase.
-10. Verifique `/health` via endpoint `https://<project-ref>.supabase.co/functions/v1/health` e teste `/login`, `/dashboard`, `/prospecting/new` e o detalhe do job.
+7. Para cadastro de organizações, configure os secrets `APP_BASE_URL` e, se necessário, `APP_ALLOWED_ORIGINS`, configure SMTP/envio de e-mail do Supabase Auth e permita a URL `/set-password` em **Authentication → URL Configuration → Redirect URLs**. Depois aplique a migration `20261005130000_organization_admin_invites.sql` e publique `supabase functions deploy admin-organizations`.
+8. Para Hostinger, execute `npm run build` e publique o conteúdo de `dist/`; `public/.htaccess` configura fallback SPA em Apache.
+9. Para Vercel, importe o projeto, configure as variáveis por Development/Preview/Production e use `npm run build` com `dist` como pasta de saída.
+10. Configure domínio e SSL no host, bem como redirect URLs de Auth no Supabase.
+11. Verifique `/health` via endpoint `https://<project-ref>.supabase.co/functions/v1/health` e teste `/login`, `/dashboard`, `/prospecting/new` e o detalhe do job. Para a gestão administrativa, valide o envio real do convite e o fluxo completo de `/set-password` em staging.
 
 ## Promoção e rollback
 

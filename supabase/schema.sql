@@ -7,6 +7,11 @@ create table if not exists public.organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text not null unique,
+  address text,
+  email text,
+  whatsapp text,
+  admin_user_id uuid references auth.users(id) on delete set null,
+  admin_invite_sent_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -25,6 +25,7 @@ import {
 import { defaultActionScoreWeights, type ActionScoreWeights } from '../../services/ai/scoring'
 import { useAuth } from '../../hooks/useAuth'
 import { decideUserApproval, getPendingUsers } from '../../services/auth/userApprovalService'
+import { OrganizationManagementPanel } from './organization-management-panel'
 
 const LIST_FIELD_HINT = 'Separe os itens por vírgula ou linha.'
 
@@ -124,6 +125,7 @@ export function SettingsPage() {
       </header>
 
       {user?.isPlatformAdmin ? <UserApprovalsCard /> : null}
+      {user?.isPlatformAdmin ? <OrganizationManagementPanel /> : null}
 
       <Card>
         <CardHeader>
@@ -145,42 +147,51 @@ export function SettingsPage() {
           ) : null}
           {!prospectingMockMode && organizations.data?.length === 0 ? (
             <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-              <p>
-                Nenhuma organização com permissão de proprietário ou administrador foi encontrada para sua conta.
-                Crie o primeiro workspace para ativar prospecção, pipeline e configurações reais.
-              </p>
-              <div className="grid gap-3 md:grid-cols-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Nome da organização
-                  <input
-                    className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                    value={newOrganizationName}
-                    onChange={(event) => setNewOrganizationName(event.target.value)}
-                    placeholder="Ex.: Studio Nova"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  Slug
-                  <input
-                    className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                    value={newOrganizationSlug}
-                    onChange={(event) => setNewOrganizationSlug(event.target.value)}
-                    placeholder="studio-nova"
-                  />
-                </label>
-              </div>
-              {createOrganizationMutation.isError ? (
-                <Alert className="border-red-200 bg-red-50 text-red-800">
-                  {createOrganizationMutation.error instanceof Error ? createOrganizationMutation.error.message : 'Não foi possível criar a organização.'}
-                </Alert>
-              ) : null}
-              <Button
-                type="button"
-                onClick={() => void createOrganizationMutation.mutateAsync()}
-                disabled={createOrganizationMutation.isPending || newOrganizationName.trim().length < 2}
-              >
-                {createOrganizationMutation.isPending ? 'Criando...' : 'Criar organização'}
-              </Button>
+              {user?.isPlatformAdmin ? (
+                <>
+                  <p>
+                    Nenhuma organização com permissão de proprietário ou administrador foi encontrada para sua conta.
+                    Crie um workspace interno para ativar prospecção e configurações comerciais.
+                  </p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <label className="text-sm font-medium text-slate-700">
+                      Nome do workspace interno
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                        value={newOrganizationName}
+                        onChange={(event) => setNewOrganizationName(event.target.value)}
+                        placeholder="Ex.: Minha empresa"
+                      />
+                    </label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Slug
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                        value={newOrganizationSlug}
+                        onChange={(event) => setNewOrganizationSlug(event.target.value)}
+                        placeholder="minha-empresa"
+                      />
+                    </label>
+                  </div>
+                  {createOrganizationMutation.isError ? (
+                    <Alert className="border-red-200 bg-red-50 text-red-800">
+                      {createOrganizationMutation.error instanceof Error ? createOrganizationMutation.error.message : 'Não foi possível criar o workspace.'}
+                    </Alert>
+                  ) : null}
+                  <Button
+                    type="button"
+                    onClick={() => void createOrganizationMutation.mutateAsync()}
+                    disabled={createOrganizationMutation.isPending || newOrganizationName.trim().length < 2}
+                  >
+                    {createOrganizationMutation.isPending ? 'Criando...' : 'Criar workspace interno'}
+                  </Button>
+                </>
+              ) : (
+                <p>
+                  Sua conta ainda não está associada a uma organização. Peça ao administrador da plataforma para cadastrar
+                  sua organização e enviar um convite para este e-mail.
+                </p>
+              )}
             </div>
           ) : null}
           {!prospectingMockMode && organizations.data && organizations.data.length > 0 ? (

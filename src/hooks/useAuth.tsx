@@ -28,6 +28,7 @@ type AuthContextValue = {
   signIn: (input: SignInInput) => Promise<void>
   signUp: (input: SignUpInput) => Promise<AppUser | null>
   resetPassword: (email: string) => Promise<void>
+  updatePassword: (password: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -68,6 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.resetPassword(email)
   }, [])
 
+  const updatePassword = useCallback(async (password: string) => {
+    const nextUser = await authService.updatePassword(password)
+    setUser(nextUser)
+  }, [])
+
   const logout = useCallback(async () => {
     await authService.signOut()
     setUser(null)
@@ -80,9 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       resetPassword,
+      updatePassword,
       logout,
     }),
-    [isLoading, logout, resetPassword, signIn, signUp, user],
+    [isLoading, logout, resetPassword, signIn, signUp, updatePassword, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -140,6 +140,14 @@ export const authService = {
     throw new Error('Configure o Supabase para recuperar a senha de uma conta real.')
   },
 
+  async updatePassword(password: string): Promise<AppUser> {
+    if (!supabase) throw new Error('Configure o Supabase para definir uma senha.')
+    const { data, error } = await supabase.auth.updateUser({ password })
+    if (error) throw new Error(`Não foi possível definir a senha: ${error.message}`)
+    if (!data.user) throw new Error('Não foi possível validar o convite. Abra o link recebido por e-mail novamente.')
+    return getAuthenticatedUser(data.user)
+  },
+
   async signOut() {
     if (supabase) {
       const { error } = await supabase.auth.signOut()

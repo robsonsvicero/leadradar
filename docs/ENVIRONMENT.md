@@ -27,8 +27,12 @@ Configure pelo Supabase Dashboard/CLI como secrets, nunca em `.env` lido pelo Vi
 - `OPENAI_API_KEY` (necessária para funções de IA).
 - `AI_LEAD_ANALYSIS_MODEL`, `AI_OUTREACH_MODEL`, limites e variáveis de custo documentadas em [AI.md](./AI.md) e [AI_COSTS.md](./AI_COSTS.md).
 - `SUPABASE_SERVICE_ROLE_KEY` é disponibilizada/configurada somente no ambiente Edge Function; jamais use prefixo `VITE_`.
+- `APP_BASE_URL` para a Edge Function `admin-organizations`, com a origem pública do frontend (por exemplo, `https://app.exemplo.com`); a função acrescenta `/set-password` como destino do convite.
+- `APP_ALLOWED_ORIGINS` é opcional para a Edge Function `admin-organizations`; informe origens adicionais separadas por vírgula, sem caminhos, se staging ou outro domínio também precisar chamar a função.
 
 `SUPABASE_URL`/`SUPABASE_ANON_KEY` usados por Edge Functions são secrets/variáveis gerenciadas pelo Supabase, separados dos valores `VITE_*`.
+
+Para que os convites cheguem aos administradores, configure o envio de e-mail/SMTP do Supabase Auth e permita a URL `/set-password` na lista **Authentication → URL Configuration → Redirect URLs**. Configure também a Site URL apropriada ao ambiente. Não exponha a service role no frontend.
 
 ## Arquivos e setup
 

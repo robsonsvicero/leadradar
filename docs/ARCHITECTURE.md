@@ -17,6 +17,10 @@ O cliente nunca envia ou recebe a chave do Google. A Edge Function valida o JWT,
 
 O analisador salva o primeiro endereço de e-mail público encontrado no HTML do website da empresa. A lista de leads o apresenta como link de e-mail; endereços não são inferidos quando não aparecem na página analisada.
 
+## Cadastro administrativo de organizações
+
+O administrador da plataforma cadastra nome, endereço, e-mail do administrador e WhatsApp em Configurações. A Edge Function `admin-organizations` revalida o JWT e o perfil de administrador, cria a organização, convida o e-mail com Supabase Auth e associa o usuário como owner. Cadastros comuns não podem criar organizações por RPC ou diretamente via RLS. O convite redireciona para `/set-password`; o destinatário define sua própria senha e entra no workspace.
+
   ## Inteligência comercial com IA
 
   ```text
