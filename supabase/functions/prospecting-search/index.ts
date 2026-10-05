@@ -33,6 +33,16 @@ const createSchema = z.object({
   targetQuantity: z.number().int().min(prospectingConfig.minCompaniesPerJob).max(prospectingConfig.maxCompaniesPerJob),
 })
 
+const scheduledCreateSchema = z.object({
+  action: z.literal('scheduled-create'),
+  organizationId: z.string().uuid(),
+  location: z.string().trim().min(2).max(120),
+  segment: z.string().trim().min(2).max(120),
+  targetQuantity: z.number().int().min(prospectingConfig.minCompaniesPerJob).max(prospectingConfig.maxCompaniesPerJob),
+  minimumScore: z.number().int().min(0).max(100),
+  runId: z.string().uuid(),
+})
+
 const cancelSchema = z.object({ action: z.literal('cancel'), jobId: z.string().uuid() })
 const continueSchema = z.object({ action: z.literal('continue'), jobId: z.string().uuid() })
 
@@ -59,6 +69,8 @@ type Job = {
   segment: string
   keywords: string[]
   target_quantity: number
+  is_automatic: boolean
+  automatic_minimum_score: number | null
   status: string
   current_step: string
   companies_found: number
@@ -626,6 +638,9 @@ async function saveLead(
   })
   const scores = calculateLeadScore({ technicalScore: technical.score, icpMatch, signals })
   const opportunity = opportunityFor(signals)
+  if (job.is_automatic && job.automatic_minimum_score !== null && scores.score < job.automatic_minimum_score) {
+    return { classification: scores.classification, leadId: null }
+  }
   const leadValues = {
     organization_id: job.organization_id,
     company_id: companyId,
@@ -1030,6 +1045,131 @@ async function processJobStep(
   }
 }
 
+async function createScheduledJob(
+  admin: SupabaseClient,
+  organizationId: string,
+  location: string,
+  segment: string,
+  targetQuantity: number,
+  minimumScore: number,
+  runId: string,
+  googleApiKey: string,
+  pageSpeedKey: string | undefined,
+  supabaseUrl: string,
+  anonKey: string,
+  authorization: string,
+) {
+  const { data: run, error: runError } = await admin
+    .from('automatic_prospecting_runs')
+    .select('id, organization_id, status, prospecting_job_id')
+    .eq('id', runId)
+    .maybeSingle()
+  if (runError || !run || run.organization_id !== organizationId || run.status !== 'running') {
+    return response({ error: 'A execução automática não está reservada para esta organização.' }, 403)
+  }
+  if (run.prospecting_job_id) {
+    const { data: existingJob, error: existingJobError } = await admin
+      .from('prospecting_jobs')
+      .select('*')
+      .eq('id', run.prospecting_job_id)
+      .maybeSingle()
+    if (existingJobError) return response({ error: 'Não foi possível recuperar o job já reservado.' }, 500)
+    if (existingJob) return response({ job: existingJob }, 202)
+  }
+  const { data: existingAutomaticJob, error: automaticJobError } = await admin
+    .from('prospecting_jobs')
+    .select('*')
+    .eq('automatic_run_id', runId)
+    .maybeSingle()
+  if (automaticJobError) return response({ error: 'Não foi possível verificar jobs automáticos existentes.' }, 500)
+  if (existingAutomaticJob) {
+    const { error: linkError } = await admin
+      .from('automatic_prospecting_runs')
+      .update({ prospecting_job_id: existingAutomaticJob.id })
+      .eq('id', runId)
+    if (linkError) return response({ error: 'Não foi possível associar o job automático à execução.' }, 500)
+    return response({ job: existingAutomaticJob }, 202)
+  }
+
+  const { data: settings, error: settingsError } = await admin
+    .from('automatic_prospecting_settings')
+    .select('enabled, leads_per_day, minimum_score')
+    .eq('organization_id', organizationId)
+    .maybeSingle()
+  if (settingsError) return response({ error: 'Não foi possível validar as configurações automáticas.' }, 500)
+  if (!settings?.enabled || targetQuantity > settings.leads_per_day || minimumScore !== settings.minimum_score) {
+    return response({ error: 'As configurações da prospecção automática foram alteradas. Aguarde a próxima execução.' }, 409)
+  }
+
+  const { data: icp, error: icpError } = await admin
+    .from('organization_icp_settings')
+    .select('target_segments, target_locations')
+    .eq('organization_id', organizationId)
+    .eq('active', true)
+    .maybeSingle()
+  if (icpError) return response({ error: 'Não foi possível validar o ICP ativo.' }, 500)
+  if (!icp?.target_segments?.includes(segment) || !icp.target_locations?.includes(location)) {
+    return response({ error: 'O segmento ou a localização não pertence ao ICP ativo.' }, 403)
+  }
+
+  const { data: member, error: memberError } = await admin
+    .from('organization_members')
+    .select('user_id')
+    .eq('organization_id', organizationId)
+    .in('role', ['owner', 'admin'])
+    .limit(1)
+    .maybeSingle()
+  if (memberError || !member) return response({ error: 'Não foi possível identificar um administrador da organização.' }, 500)
+
+  const { count, error: activeError } = await admin
+    .from('prospecting_jobs')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId)
+    .in('status', ['queued', 'running'])
+  if (activeError) return response({ error: 'Não foi possível verificar jobs ativos.' }, 500)
+  if ((count ?? 0) >= prospectingConfig.maxActiveJobsPerOrganization) {
+    return response({ error: 'Já existe uma prospecção ativa nesta organização.' }, 409)
+  }
+
+  const { data: job, error: insertError } = await admin.from('prospecting_jobs').insert({
+    organization_id: organizationId,
+    created_by: member.user_id,
+    location,
+    segment,
+    keywords: [],
+    target_quantity: targetQuantity,
+    is_automatic: true,
+    automatic_minimum_score: minimumScore,
+    automatic_run_id: runId,
+    status: 'queued',
+  }).select('*').single()
+  if (insertError) {
+    if (insertError.code === '23505') {
+      const { data: existingJob, error: existingJobError } = await admin
+        .from('prospecting_jobs')
+        .select('*')
+        .eq('automatic_run_id', runId)
+        .maybeSingle()
+      if (existingJobError) return response({ error: 'Não foi possível recuperar o job automático existente.' }, 500)
+      if (existingJob) return response({ job: existingJob }, 202)
+    }
+    const duplicateActiveJob = insertError.code === '23505'
+    return response({
+      error: duplicateActiveJob ? 'Já existe uma prospecção ativa nesta organização.' : `Não foi possível criar o job: ${insertError.message}`,
+    }, duplicateActiveJob ? 409 : 500)
+  }
+
+  const { error: linkError } = await admin
+    .from('automatic_prospecting_runs')
+    .update({ prospecting_job_id: job.id })
+    .eq('id', runId)
+  if (linkError) log('automatic_prospecting_run_job_link_failed', { run_id: runId, job_id: job.id })
+
+  await scheduleJobStep(processJobStep(admin, job.id, googleApiKey, pageSpeedKey, supabaseUrl, anonKey, authorization))
+  log('automatic_prospecting_started', { job_id: job.id, organization_id: organizationId, run_id: runId })
+  return response({ job }, 202)
+}
+
 function scheduleJobStep(promise: Promise<void>) {
   if (runtime) {
     runtime.waitUntil(promise)
@@ -1049,6 +1189,7 @@ deno.serve(async (request) => {
 
   const authorization = request.headers.get('Authorization')
   if (!authorization) return response({ error: 'Autenticação obrigatória.' }, 401)
+  const isServiceRoleRequest = authorization === `Bearer ${serviceRoleKey}`
   const admin = makeClient(supabaseUrl, serviceRoleKey)
 
   let input: unknown
@@ -1059,15 +1200,18 @@ deno.serve(async (request) => {
   }
 
   const userClient = makeClient(supabaseUrl, anonKey, authorization)
-  const { data: authData, error: authError } = await userClient.auth.getUser()
-  if (authError || !authData.user) return response({ error: 'Sessão inválida ou expirada.' }, 401)
+  const authData = isServiceRoleRequest ? null : await userClient.auth.getUser().then(({ data, error }) =>
+    error || !data.user ? null : data,
+  )
+  if (!isServiceRoleRequest && !authData?.user) return response({ error: 'Sessão inválida ou expirada.' }, 401)
 
   const cancelInput = cancelSchema.safeParse(input)
   if (cancelInput.success) {
+    if (isServiceRoleRequest) return response({ error: 'Acesso negado.' }, 403)
     const { data: job, error } = await admin.from('prospecting_jobs').select('*').eq('id', cancelInput.data.jobId).maybeSingle()
     if (error || !job) return response({ error: 'Prospecção não encontrada.' }, 404)
     try {
-      await verifyMembership(userClient, job.organization_id, authData.user.id)
+      await verifyMembership(userClient, job.organization_id, authData!.user.id)
     } catch (membershipError) {
       return response({ error: membershipError instanceof Error ? membershipError.message : 'Acesso negado.' }, 403)
     }
@@ -1079,7 +1223,7 @@ deno.serve(async (request) => {
       completed_at: new Date().toISOString(),
     }).eq('id', job.id)
     if (updateError) return response({ error: 'Não foi possível cancelar a prospecção.' }, 500)
-    log('prospecting_cancelled', { job_id: job.id, organization_id: job.organization_id, user_id: authData.user.id })
+    log('prospecting_cancelled', { job_id: job.id, organization_id: job.organization_id, user_id: authData!.user.id })
     return response({ ok: true })
   }
 
@@ -1092,7 +1236,7 @@ deno.serve(async (request) => {
       .maybeSingle()
     if (error || !job) return response({ error: 'Prospecção não encontrada.' }, 404)
     try {
-      await verifyMembership(userClient, job.organization_id, authData.user.id)
+      if (!isServiceRoleRequest) await verifyMembership(userClient, job.organization_id, authData!.user.id)
     } catch (membershipError) {
       return response({ error: membershipError instanceof Error ? membershipError.message : 'Acesso negado.' }, 403)
     }
@@ -1105,8 +1249,30 @@ deno.serve(async (request) => {
     return response({ ok: true, scheduled: true }, 202)
   }
 
+  const scheduledInput = scheduledCreateSchema.safeParse(input)
+  if (scheduledInput.success) {
+    if (!isServiceRoleRequest) return response({ error: 'Acesso negado.' }, 401)
+    const googleApiKey = deno.env.get('GOOGLE_PLACES_API_KEY')
+    if (!googleApiKey) return response({ error: 'Google Places não está configurado.' }, 503)
+    return createScheduledJob(
+      admin,
+      scheduledInput.data.organizationId,
+      scheduledInput.data.location,
+      scheduledInput.data.segment,
+      scheduledInput.data.targetQuantity,
+      scheduledInput.data.minimumScore,
+      scheduledInput.data.runId,
+      googleApiKey,
+      deno.env.get('PAGESPEED_API_KEY'),
+      supabaseUrl,
+      anonKey,
+      authorization,
+    )
+  }
+
   const parsed = createSchema.safeParse(input)
   if (!parsed.success) return response({ error: 'Dados inválidos.', details: parsed.error.flatten().fieldErrors }, 400)
+  if (!authData?.user) return response({ error: 'Sessão inválida ou expirada.' }, 401)
   const googleApiKey = deno.env.get('GOOGLE_PLACES_API_KEY')
   if (!googleApiKey) {
     return response({ error: 'A prospecção real exige o secret GOOGLE_PLACES_API_KEY configurado nas Edge Functions do Supabase.' }, 503)

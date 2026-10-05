@@ -1,8 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { logout } = vi.hoisted(() => ({ logout: vi.fn() }))
+const { logout, getNotifications } = vi.hoisted(() => ({
+  logout: vi.fn(),
+  getNotifications: vi.fn(async () => ({ notifications: [], unreadCount: 0 })),
+}))
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -11,19 +15,34 @@ vi.mock('../hooks/useAuth', () => ({
   }),
 }))
 
+vi.mock('../services/notifications/notificationService', () => ({
+  getOrganizationNotifications: getNotifications,
+  markOrganizationNotificationRead: vi.fn(),
+}))
+
 import { AppShell } from '../components/layout/app-shell'
+
+function renderApp() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <AppShell><div>Conteúdo da página</div></AppShell>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
 
 describe('app shell navigation', () => {
   beforeEach(() => {
     logout.mockReset()
+    getNotifications.mockClear()
   })
 
   it('keeps the sidebar fixed with its own scrollable navigation', () => {
-    render(
-      <MemoryRouter>
-        <AppShell><div>Conteúdo da página</div></AppShell>
-      </MemoryRouter>,
-    )
+    renderApp()
 
     const sidebar = screen.getByRole('complementary')
     expect(sidebar).toHaveClass('fixed', 'h-dvh', 'flex-col')
@@ -32,11 +51,7 @@ describe('app shell navigation', () => {
   })
 
   it('shows the animated radar logo beside the product name', () => {
-    render(
-      <MemoryRouter>
-        <AppShell><div>Conteúdo da página</div></AppShell>
-      </MemoryRouter>,
-    )
+    renderApp()
 
     expect(screen.getByText('LEAD RADAR')).toBeInTheDocument()
     const logo = document.querySelector<HTMLImageElement>('img[src="/favicon.svg"]')
@@ -47,11 +62,7 @@ describe('app shell navigation', () => {
   })
 
   it('moves the mobile sign-out action into the menu and keeps desktop sign-out in the header', () => {
-    render(
-      <MemoryRouter>
-        <AppShell><div>Conteúdo da página</div></AppShell>
-      </MemoryRouter>,
-    )
+    renderApp()
 
     const signOutButtons = screen.getAllByRole('button', { name: 'Sair' })
     expect(signOutButtons).toHaveLength(2)

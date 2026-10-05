@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -31,13 +31,18 @@ describe('prospecting flow', () => {
       </QueryClientProvider>,
     )
 
-    const submitButton = screen.getByRole('button', { name: /gerar dados de demonstração/i })
+    const submitButton = screen.getByRole('button', { name: /iniciar prospecção demo/i })
     await waitFor(() => expect(submitButton).not.toBeDisabled())
+    act(() => fireEvent.click(screen.getByRole('button', { name: 'Dentistas' })))
+    expect(screen.getByLabelText('Segmento')).toHaveValue('Dentistas')
     fireEvent.change(screen.getByLabelText('Segmento'), { target: { value: 'clínicas odontológicas' } })
     fireEvent.change(screen.getByLabelText('Localização'), { target: { value: 'São Paulo, SP' } })
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'SP' } })
+    fireEvent.click(screen.getByRole('button', { name: '25' }))
     fireEvent.click(submitButton)
 
     await screen.findByText(/Prospecção de clínicas odontológicas/)
+    expect(screen.getByText('São Paulo, SP, Brasil · até 25 empresas')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('Empresa de demonstração A')).toBeInTheDocument())
     expect(screen.getByText(/os resultados exibidos são fictícios/i)).toBeInTheDocument()
     expect(screen.getByText('Empresa de demonstração B')).toBeInTheDocument()

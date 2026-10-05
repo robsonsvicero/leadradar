@@ -1,6 +1,9 @@
 [functions.prospecting-search]
 verify_jwt = true
 
+[functions.automatic-prospecting]
+verify_jwt = false
+
 [functions.generate-reply-assistant]
 verify_jwt = true
 

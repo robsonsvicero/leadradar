@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, CircleAlert, Pencil, Plus, Save, ShieldCheck, ToggleLeft, ToggleRight, Trash2, UserCheck, UserX, X } from 'lucide-react'
+import { BellRing, Check, CircleAlert, Clock3, Pencil, Plus, Radar, Save, ShieldCheck, ToggleLeft, ToggleRight, Trash2, UserCheck, UserX, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import { Alert } from '../../components/ui/alert'
@@ -28,6 +28,12 @@ import { useAuth } from '../../hooks/useAuth'
 import { decideUserApproval, getPendingUsers } from '../../services/auth/userApprovalService'
 import { OrganizationMembersPanel } from './organization-members-panel'
 import { OrganizationManagementPanel } from './organization-management-panel'
+import {
+  defaultAutomaticProspectingSettings,
+  getAutomaticProspectingSettings,
+  saveAutomaticProspectingSettings,
+  type AutomaticProspectingSettings,
+} from '../../services/prospecting/automaticProspectingService'
 
 const LIST_FIELD_HINT = 'Separe os itens por vírgula ou linha.'
 
@@ -326,9 +332,182 @@ function OrganizationAIConfiguration({ organizationId }: { organizationId: strin
   return (
     <div className="space-y-6">
       <ICPSettingsCard organizationId={organizationId} initial={settings.data.icp} />
+      <AutomaticProspectingCard organizationId={organizationId} icp={settings.data.icp} />
       <ServicesSettingsCard organizationId={organizationId} initial={settings.data.services} />
       <VoiceSettingsCard organizationId={organizationId} initial={settings.data.profile} />
     </div>
+  )
+}
+
+function AutomaticProspectingCard({
+  organizationId,
+  icp,
+}: {
+  organizationId: string
+  icp: OrganizationAISettings['icp']
+}) {
+  const queryClient = useQueryClient()
+  const query = useQuery({
+    queryKey: ['automatic-prospecting-settings', organizationId],
+    queryFn: () => getAutomaticProspectingSettings(organizationId),
+    retry: false,
+  })
+  const [formOverride, setFormOverride] = useState<AutomaticProspectingSettings | null>(null)
+  const form = formOverride ?? query.data?.settings ?? defaultAutomaticProspectingSettings
+  const hasActiveTargets = Boolean(icp?.active && icp.target_segments.length && icp.target_locations.length)
+
+  const updateForm = (values: Partial<AutomaticProspectingSettings>) => {
+    setFormOverride((current) => ({ ...(current ?? query.data?.settings ?? defaultAutomaticProspectingSettings), ...values }))
+  }
+
+  const save = useMutation({
+    mutationFn: () => saveAutomaticProspectingSettings(organizationId, form),
+    onSuccess: async (settings) => {
+      setFormOverride(settings)
+      await queryClient.invalidateQueries({ queryKey: ['automatic-prospecting-settings', organizationId] })
+    },
+  })
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    save.mutate()
+  }
+
+  if (query.isLoading) return <Skeleton className="h-72 w-full rounded-xl" />
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Prospecção automática</CardTitle>
+        <CardDescription>
+          Agende uma busca diária usando os segmentos e localidades do ICP ativo. Os contatos continuam sob revisão humana.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {query.isError ? (
+          <Alert className="mb-4 border-destructive/30 bg-destructive/10 text-destructive">{query.error.message}</Alert>
+        ) : null}
+        <form className="space-y-5" onSubmit={onSubmit}>
+          <label className="flex items-start gap-3 rounded-lg border border-border p-4">
+            <input
+              aria-label="Ativar prospecção automática"
+              type="checkbox"
+              checked={form.enabled}
+              onChange={(event) => updateForm({ enabled: event.target.checked })}
+              className="mt-1 h-4 w-4 accent-primary"
+            />
+            <span className="min-w-0">
+              <span className="flex items-center gap-2 font-medium text-foreground">
+                <Radar aria-hidden="true" className="h-4 w-4 text-primary" />
+                Ativar busca automática diária
+              </span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                O agendador cria um job de prospecção; nenhuma mensagem é enviada automaticamente.
+              </span>
+            </span>
+          </label>
+
+          {!hasActiveTargets ? (
+            <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
+              Para habilitar a busca, salve um ICP ativo com pelo menos um segmento B2B e uma localização.
+            </Alert>
+          ) : null}
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <label className="text-sm font-medium text-foreground">
+              <span className="flex items-center gap-2">
+                <Clock3 aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                Horário diário
+              </span>
+              <input
+                aria-label="Horário diário"
+                type="time"
+                required
+                value={form.run_time}
+                onChange={(event) => updateForm({ run_time: event.target.value })}
+                className="mt-2 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <span className="mt-1 block text-xs text-muted-foreground">Horário de Brasília (America/Sao_Paulo)</span>
+            </label>
+            <label className="text-sm font-medium text-foreground">
+              Empresas por dia
+              <input
+                aria-label="Empresas por dia"
+                type="number"
+                min={1}
+                max={100}
+                step={1}
+                required
+                value={form.leads_per_day}
+                onChange={(event) => updateForm({ leads_per_day: Number(event.target.value) })}
+                className="mt-2 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <span className="mt-1 block text-xs text-muted-foreground">De 1 a 100 por busca</span>
+            </label>
+            <label className="text-sm font-medium text-foreground">
+              Score mínimo para salvar
+              <input
+                aria-label="Score mínimo para salvar"
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                required
+                value={form.minimum_score}
+                onChange={(event) => updateForm({ minimum_score: Number(event.target.value) })}
+                className="mt-2 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <span className="mt-1 block text-xs text-muted-foreground">Empresas abaixo do corte não viram leads</span>
+            </label>
+            <label className="text-sm font-medium text-foreground">
+              Score para alertar
+              <input
+                aria-label="Score para alertar"
+                type="number"
+                min={form.minimum_score}
+                max={100}
+                step={1}
+                required
+                value={form.alert_score}
+                onChange={(event) => updateForm({ alert_score: Number(event.target.value) })}
+                className="mt-2 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <BellRing aria-hidden="true" className="h-3.5 w-3.5" />Aviso no sino de notificações
+              </span>
+            </label>
+          </div>
+
+          {query.data?.lastRun ? (
+            <div className="rounded-lg bg-muted p-3 text-sm">
+              <p className="font-medium text-foreground">
+                Última tentativa: {new Date(query.data.lastRun.started_at).toLocaleString('pt-BR')}
+                {' · '}
+                {query.data.lastRun.status === 'scheduled'
+                  ? 'job criado'
+                  : query.data.lastRun.status === 'running'
+                    ? 'em andamento'
+                    : 'falhou'}
+              </p>
+              {query.data.lastRun.error_message ? (
+                <p className="mt-1 text-destructive">{query.data.lastRun.error_message}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {save.isError ? (
+            <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{save.error.message}</Alert>
+          ) : null}
+          {save.isSuccess ? (
+            <Alert className="border-success/30 bg-success/10 text-success-foreground">Configuração da prospecção automática salva.</Alert>
+          ) : null}
+          <Button type="submit" disabled={save.isPending || query.isError}>
+            <Save aria-hidden="true" className="h-4 w-4" />
+            {save.isPending ? 'Salvando…' : 'Salvar automação'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
 

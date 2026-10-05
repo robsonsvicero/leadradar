@@ -1,11 +1,14 @@
 import { Activity, Bell, Bot, BriefcaseBusiness, Building2, CalendarDays, FileText, Inbox, LayoutDashboard, ListTodo, LogOut, Menu, Settings, Sparkles, Users, Workflow, X } from 'lucide-react'
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button } from '../ui/button'
 import { Avatar, AvatarFallback } from '../ui/avatar'
 import { useAuth } from '../../hooks/useAuth'
 import { featureFlags, type FeatureFlagName } from '../../config/featureFlags'
+import { prospectingMockMode } from '../../services/prospecting/prospectingService'
+import { getOrganizationNotifications, markOrganizationNotificationRead } from '../../services/notifications/notificationService'
 
 const navItems: Array<{ label: string; to: string; icon: typeof LayoutDashboard; feature?: FeatureFlagName }> = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -120,12 +123,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   />
                   <span className="pointer-events-none absolute right-3 top-3 text-muted-foreground">⌕</span>
                 </div>
-                <Button variant="ghost" size="icon" aria-label="Notificações">
-                  <Bell className="h-4 w-4" />
-                </Button>
               </div>
 
               <div className="flex items-center gap-3">
+                <NotificationBell enabled={Boolean(user) && !prospectingMockMode} />
                 <div className="hidden text-right md:block">
                   <p className="text-sm font-medium text-foreground">{user?.full_name ?? user?.email ?? 'Usuário'}</p>
                   <p className="text-xs text-muted-foreground">Perfil ativo</p>
@@ -151,6 +152,107 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       {open ? <button className="fixed inset-0 z-30 bg-overlay/30 md:hidden" onClick={() => setOpen(false)} aria-label="Fechar menu overlay" /> : null}
+    </div>
+  )
+}
+
+function NotificationBell({ enabled }: { enabled: boolean }) {
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const notifications = useQuery({
+    queryKey: ['organization-notifications'],
+    queryFn: getOrganizationNotifications,
+    enabled,
+    refetchInterval: 60_000,
+    retry: false,
+  })
+  const markRead = useMutation({
+    mutationFn: markOrganizationNotificationRead,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['organization-notifications'] })
+    },
+  })
+
+  const openLead = (notificationId: string, readAt: string | null) => {
+    if (readAt) {
+      setOpen(false)
+      navigate('/leads')
+      return
+    }
+    markRead.mutate(notificationId, {
+      onSuccess: () => {
+        setOpen(false)
+        navigate('/leads')
+      },
+    })
+  }
+
+  return (
+    <div className="relative">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label={notifications.data?.unreadCount ? `Notificações: ${notifications.data.unreadCount} não lidas` : 'Notificações'}
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <Bell aria-hidden="true" className="h-4 w-4" />
+        {notifications.data?.unreadCount ? (
+          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground">
+            {notifications.data.unreadCount > 9 ? '9+' : notifications.data.unreadCount}
+          </span>
+        ) : null}
+      </Button>
+      {open ? (
+        <section
+          aria-label="Notificações"
+          className="absolute right-0 top-12 z-50 max-h-[min(28rem,calc(100dvh-6rem))] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-xl"
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-border px-1 pb-3">
+            <h2 className="font-semibold">Notificações</h2>
+            {notifications.data?.unreadCount ? (
+              <span className="rounded-full bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">
+                {notifications.data.unreadCount} não lidas
+              </span>
+            ) : null}
+          </div>
+          {notifications.isLoading ? <p className="px-1 py-5 text-sm text-muted-foreground">Carregando notificações…</p> : null}
+          {notifications.isError ? (
+            <p role="alert" className="px-1 py-4 text-sm text-destructive">{notifications.error.message}</p>
+          ) : null}
+          {markRead.isError ? (
+            <p role="alert" className="px-1 py-2 text-sm text-destructive">{markRead.error.message}</p>
+          ) : null}
+          {!notifications.isLoading && !notifications.isError && !notifications.data?.notifications.length ? (
+            <p className="px-1 py-5 text-sm text-muted-foreground">Novos leads acima do score de alerta aparecerão aqui.</p>
+          ) : null}
+          <ul className="divide-y divide-border">
+            {notifications.data?.notifications.map((notification) => (
+              <li key={notification.id}>
+                <button
+                  type="button"
+                  onClick={() => openLead(notification.id, notification.read_at)}
+                  disabled={markRead.isPending}
+                  className="flex w-full items-start gap-3 rounded-md px-2 py-3 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                >
+                  <span className={[
+                    'mt-1 h-2.5 w-2.5 shrink-0 rounded-full',
+                    notification.read_at ? 'bg-muted-foreground/40' : 'bg-primary',
+                  ].join(' ')} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{notification.company_name}</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      Lead com score {notification.score} · {new Date(notification.created_at).toLocaleString('pt-BR')}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   )
 }

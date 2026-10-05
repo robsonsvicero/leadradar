@@ -99,7 +99,7 @@ export function DashboardPage() {
   const repliedLeads = leads.filter((lead) => Boolean(lead.last_response_at) || lead.status === 'replied')
   const wonLeads = leads.filter((lead) => lead.status === 'won')
   const opportunities = leads
-    .filter((lead) => lead.score >= 80)
+    .filter((lead) => lead.score >= 40)
     .sort((first, second) => second.score - first.score || first.company_name.localeCompare(second.company_name, 'pt-BR'))
   const conversionRate = contactedLeads.length === 0 ? 0 : Math.round((wonLeads.length / contactedLeads.length) * 100)
 
