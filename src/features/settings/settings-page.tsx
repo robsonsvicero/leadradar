@@ -902,7 +902,7 @@ function TextAreaField({
   )
 }
 
-function ListField({
+export function ListField({
   label,
   value,
   onChange,
@@ -911,13 +911,25 @@ function ListField({
   value: string[]
   onChange: (value: string) => void
 }) {
+  const serializedValue = listValue(value)
+  const [draft, setDraft] = useState(serializedValue)
+  const [isEditing, setIsEditing] = useState(false)
+
   return (
     <TextAreaField
       label={label}
-      value={listValue(value)}
-      onChange={onChange}
+      value={isEditing ? draft : serializedValue}
       placeholder={LIST_FIELD_HINT}
       maxLength={1000}
+      onFocus={() => {
+        setDraft(serializedValue)
+        setIsEditing(true)
+      }}
+      onChange={(nextValue) => {
+        setDraft(nextValue)
+        onChange(nextValue)
+      }}
+      onBlur={() => setIsEditing(false)}
     />
   )
 }
