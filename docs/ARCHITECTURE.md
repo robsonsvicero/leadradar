@@ -8,12 +8,14 @@ React (Nova Prospecção)
   -> Edge Function prospecting-search
   -> Google Places API (Text Search)
   -> PostgreSQL: companies, prospecting_jobs, prospecting_job_companies
-  -> análise pública do website e PageSpeed quando configurado
+  -> análise pública do website, captura de e-mail de contato publicado e PageSpeed quando configurado
   -> digital_analyses, lead_signals e leads
   -> polling TanStack Query na página do job
 ```
 
 O cliente nunca envia ou recebe a chave do Google. A Edge Function valida o JWT, confirma a associação do usuário à organização e executa as gravações com a chave de serviço apenas no backend. RLS limita a leitura das tabelas de jobs, análises, sinais e consumo à organização do usuário.
+
+O analisador salva o primeiro endereço de e-mail público encontrado no HTML do website da empresa. A lista de leads o apresenta como link de e-mail; endereços não são inferidos quando não aparecem na página analisada.
 
   ## Inteligência comercial com IA
 
@@ -77,6 +79,8 @@ Supabase organizations + organization_members
 `20261004220000_sales_proposals.sql` adds organization-scoped proposals and items linked to leads. An authenticated RPC creates proposal headers and items atomically; generated line totals and the proposal aggregate are calculated in PostgreSQL. RLS and database triggers restrict editing to drafts, validate status transitions, and record proposal events in the lead timeline. Sending, PDF generation and e-signatures are not implemented.
 
 `20261004230000_sales_cadences.sql` adds organization-scoped cadence templates, immutable ordered steps, lead enrollments and CRM task linkage. An authenticated RPC creates enrollment and all dated tasks atomically. Task completion/cancellation updates enrollment state through database triggers; no worker, provider, response monitor or outbound messaging is involved.
+
+Leads can be deleted individually or in bulk from the leads list after confirmation. Database access remains restricted to organization owners and admins. Related CRM records with cascade rules are removed; tasks are retained without their lead and cadence links.
 
 ## Componentes
 

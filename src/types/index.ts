@@ -21,6 +21,7 @@ export type Company = {
   name: string
   category: string
   description: string
+  email?: string | null
   website: string
   phone?: string | null
   city: string

@@ -4,19 +4,30 @@ import type { Lead } from '../../types'
 
 const STORAGE_KEY = 'lead-radar-demo-leads'
 
-const emptyLeads: Lead[] = []
+export type LeadWithCompanyEmail = Lead & { company_email: string | null }
 
-export async function getLeads() {
+type LeadWithCompanyRelation = Lead & {
+  companies: { email: string | null } | null
+}
+
+const emptyLeads: LeadWithCompanyEmail[] = []
+
+function mapLeadWithCompanyEmail(row: LeadWithCompanyRelation): LeadWithCompanyEmail {
+  const { companies, ...lead } = row
+  return { ...lead, company_email: companies?.email ?? null }
+}
+
+export async function getLeads(): Promise<LeadWithCompanyEmail[]> {
   if (prospectingMockMode) {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Lead[]) : emptyLeads
+    return raw ? (JSON.parse(raw) as Lead[]).map((lead) => ({ ...lead, company_email: null })) : emptyLeads
   }
   if (supabase) {
-    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('leads').select('*, companies(email)').order('created_at', { ascending: false })
     if (error) {
       throw new Error(`Não foi possível carregar os leads: ${error.message}`)
     }
-    return (data ?? []) as Lead[]
+    return (data ?? []).map((row) => mapLeadWithCompanyEmail(row as LeadWithCompanyRelation))
   }
 
   const raw = localStorage.getItem(STORAGE_KEY)
@@ -24,7 +35,7 @@ export async function getLeads() {
     return emptyLeads
   }
 
-  return JSON.parse(raw) as Lead[]
+  return (JSON.parse(raw) as Lead[]).map((lead) => ({ ...lead, company_email: null }))
 }
 
 export async function getLeadById(id: string) {
@@ -64,6 +75,28 @@ export async function updateLeadStatus(id: string, status: string) {
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(nextLeads))
   return nextLeads.find((lead) => lead.id === id) ?? null
+}
+
+export async function deleteLeads(ids: string[]): Promise<void> {
+  const uniqueIds = [...new Set(ids.filter((id) => typeof id === 'string' && id.trim()))]
+  if (uniqueIds.length === 0) throw new Error('Selecione pelo menos um lead para excluir.')
+
+  if (supabase && !prospectingMockMode) {
+    const { data, error } = await supabase.from('leads').delete().in('id', uniqueIds).select('id')
+    if (error) throw new Error(`Não foi possível excluir os leads: ${error.message}`)
+    if ((data ?? []).length !== uniqueIds.length) {
+      throw new Error('Não foi possível excluir todos os leads. Verifique se você é proprietário ou administrador da organização e atualize a lista.')
+    }
+    return
+  }
+
+  const leads = await getLeads()
+  const leadsToDelete = leads.filter((lead) => uniqueIds.includes(lead.id))
+  if (leadsToDelete.length !== uniqueIds.length) {
+    throw new Error('Um ou mais leads não foram encontrados. Atualize a lista e tente novamente.')
+  }
+  const idsToDelete = new Set(uniqueIds)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leads.filter((lead) => !idsToDelete.has(lead.id))))
 }
 
 export async function createLead(input: Partial<Lead>) {

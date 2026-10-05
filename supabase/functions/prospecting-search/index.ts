@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supa
 import { z } from 'https://esm.sh/zod@3'
 
 import { prospectingConfig } from '../../../src/config/prospecting.ts'
+import { extractPublicEmail } from '../../../src/services/prospecting/email.ts'
 import {
   calculateICPMatch,
   calculateLeadScore,
@@ -103,6 +104,7 @@ type DigitalAnalysis = {
   has_whatsapp: boolean
   has_phone: boolean
   has_email: boolean
+  contact_email: string | null
   has_social_links: boolean
   has_cta: boolean
   has_ssl: boolean | null
@@ -293,6 +295,7 @@ function readHtmlSignals(html: string) {
   }
   const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, ' ').trim() ?? null
   const visible = html.slice(0, 500000)
+  const contactEmail = extractPublicEmail(visible)
   return {
     page_title: title,
     meta_description: getMeta('description'),
@@ -302,7 +305,8 @@ function readHtmlSignals(html: string) {
     has_contact_form: /<form\b/i.test(visible),
     has_whatsapp: /wa\.me\/|api\.whatsapp\.com/i.test(visible),
     has_phone: /(?:tel:|\+?\d[\d\s().-]{7,}\d)/i.test(visible),
-    has_email: /mailto:|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(visible),
+    has_email: Boolean(contactEmail),
+    contact_email: contactEmail,
     has_social_links: /instagram\.com|facebook\.com|linkedin\.com|youtube\.com/i.test(visible),
     has_cta: /<(?:a|button)\b[^>]*>[\s\S]{0,160}(?:agendar|solicitar|contato|fale|orçamento|orcamento|comprar|saiba mais)/i.test(visible),
   }
@@ -892,16 +896,18 @@ async function advanceJobOneStep(
         if (Array.isArray(pageSpeedErrors) && pageSpeedErrors.length) {
           partialErrors.push(`PageSpeed indisponível (${pageSpeedErrors.length} estratégia(s)).`)
         }
+        const { contact_email: contactEmail, ...analysisRecord } = analysis
         const { error } = await admin.from('digital_analyses').upsert({
           organization_id: job.organization_id,
           company_id: companyId,
           website_url: place.websiteUri,
-          ...analysis,
+          ...analysisRecord,
         }, { onConflict: 'organization_id,company_id,website_url' })
         if (error) throw new Error(`Digital analysis write failed: ${error.message}`)
         const { error: websiteUpdateError } = await admin.from('companies').update({
           website_status: analysis.website_status,
           website_last_checked_at: analysis.analyzed_at,
+          ...(contactEmail ? { email: contactEmail } : {}),
         }).eq('id', companyId)
         if (websiteUpdateError) throw new Error(`Company website update failed: ${websiteUpdateError.message}`)
       } catch (error) {

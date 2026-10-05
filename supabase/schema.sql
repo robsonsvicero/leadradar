@@ -36,6 +36,7 @@ create table if not exists public.companies (
   name text not null,
   category text,
   description text,
+  email text,
   website text,
   city text,
   state text,
@@ -157,7 +158,8 @@ for each row execute function public.update_updated_at();
 alter table public.organizations enable row level security;
 alter table public.profiles enable row level security;
 alter table public.organization_members enable row level security;
-alter table public.companies enable row level security;
+alter table public.companies
+  add column if not exists email text, enable row level security;
 alter table public.leads enable row level security;
 alter table public.tasks enable row level security;
 alter table public.activity_logs enable row level security;
