@@ -1,0 +1,599 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Check, CircleAlert, Pencil, Plus, Save, ShieldCheck, ToggleLeft, ToggleRight, X } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
+
+import { Alert } from '../../components/ui/alert'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import { Skeleton } from '../../components/ui/skeleton'
+import { prospectingMockMode } from '../../services/prospecting/prospectingService'
+import {
+  createOrganization,
+  getAIConfigurationOrganizations,
+  getOrganizationAISettings,
+  saveOrganizationAIProfile,
+  saveOrganizationICP,
+  saveOrganizationService,
+  setOrganizationServiceActive,
+  type OrganizationAIProfile,
+  type OrganizationAISettings,
+  type OrganizationICPSettings,
+  type OrganizationService,
+  type SaveProfileInput,
+  type SaveServiceInput,
+} from '../../services/ai/organizationAISettingsService'
+import { defaultActionScoreWeights, type ActionScoreWeights } from '../../services/ai/scoring'
+
+const LIST_FIELD_HINT = 'Separe os itens por vírgula ou linha.'
+
+function emptyICP(): Omit<OrganizationICPSettings, 'id' | 'organization_id'> {
+  return {
+    name: 'ICP principal',
+    description: null,
+    target_segments: [],
+    target_locations: [],
+    target_company_sizes: [],
+    preferred_services: [],
+    minimum_score: 0,
+    ideal_signals: [],
+    negative_signals: [],
+    weights: { actionScore: { ...defaultActionScoreWeights } },
+    active: true,
+  }
+}
+
+const actionScoreWeightFields: Array<{ key: keyof ActionScoreWeights; label: string }> = [
+  { key: 'icpFit', label: 'Aderência ao ICP' },
+  { key: 'opportunity', label: 'Oportunidade técnica' },
+  { key: 'buyingSignals', label: 'Sinais comerciais' },
+  { key: 'urgency', label: 'Momento de compra' },
+  { key: 'confidence', label: 'Confiança dos dados' },
+  { key: 'reachability', label: 'Contato disponível' },
+]
+
+function configuredActionWeights(weights: Record<string, unknown>): ActionScoreWeights {
+  const nested = weights.actionScore
+  const source = nested && typeof nested === 'object' && !Array.isArray(nested)
+    ? nested as Record<string, unknown>
+    : weights
+  return Object.fromEntries(actionScoreWeightFields.map(({ key }) => {
+    const value = Number(source[key])
+    const safeValue = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : defaultActionScoreWeights[key]
+    return [key, safeValue]
+  })) as ActionScoreWeights
+}
+
+function emptyProfile(): Omit<OrganizationAIProfile, 'id' | 'organization_id'> {
+  return {
+    company_name: null,
+    company_description: null,
+    target_audience: null,
+    tone: 'consultivo',
+    style: 'direto e humano',
+    sales_method: null,
+    forbidden_phrases: [],
+    preferred_phrases: [],
+    signature: null,
+  }
+}
+
+function toList(value: string) {
+  return [...new Set(value.split(/[,\n;]/).map((item) => item.trim()).filter(Boolean))]
+}
+
+function listValue(value: string[]) {
+  return value.join(', ')
+}
+
+export function SettingsPage() {
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState('')
+  const [newOrganizationName, setNewOrganizationName] = useState('')
+  const [newOrganizationSlug, setNewOrganizationSlug] = useState('')
+  const organizations = useQuery({
+    queryKey: ['ai-configuration-organizations'],
+    queryFn: getAIConfigurationOrganizations,
+    enabled: !prospectingMockMode,
+    retry: false,
+  })
+  const selectedOrganization = organizations.data?.find((item) => item.id === selectedOrganizationId)
+    ?? organizations.data?.[0]
+
+  const createOrganizationMutation = useMutation({
+    mutationFn: () => createOrganization({
+      name: newOrganizationName,
+      slug: newOrganizationSlug,
+    }),
+    onSuccess: async (organization) => {
+      setSelectedOrganizationId(organization.id)
+      setNewOrganizationName('')
+      setNewOrganizationSlug('')
+      await organizations.refetch()
+    },
+  })
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-6">
+      <header>
+        <h2 className="text-3xl font-semibold text-slate-900">Configurações comerciais</h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+          Defina o que você oferece, quais empresas quer atender e como a IA deve representar sua abordagem.
+        </p>
+      </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Organização</CardTitle>
+          <CardDescription>Somente proprietários e administradores podem alterar essas configurações.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {prospectingMockMode ? (
+            <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+              As configurações comerciais são persistidas no Supabase e ficam indisponíveis no modo de demonstração.
+              Desative o modo demo para editar dados reais.
+            </Alert>
+          ) : null}
+          {!prospectingMockMode && organizations.isLoading ? <Skeleton className="h-11 w-full" /> : null}
+          {!prospectingMockMode && organizations.isError ? (
+            <Alert className="border-red-200 bg-red-50 text-red-800">
+              {organizations.error.message}
+            </Alert>
+          ) : null}
+          {!prospectingMockMode && organizations.data?.length === 0 ? (
+            <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+              <p>
+                Nenhuma organização com permissão de proprietário ou administrador foi encontrada para sua conta.
+                Crie o primeiro workspace para ativar prospecção, pipeline e configurações reais.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Nome da organização
+                  <input
+                    className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                    value={newOrganizationName}
+                    onChange={(event) => setNewOrganizationName(event.target.value)}
+                    placeholder="Ex.: Studio Nova"
+                  />
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Slug
+                  <input
+                    className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                    value={newOrganizationSlug}
+                    onChange={(event) => setNewOrganizationSlug(event.target.value)}
+                    placeholder="studio-nova"
+                  />
+                </label>
+              </div>
+              {createOrganizationMutation.isError ? (
+                <Alert className="border-red-200 bg-red-50 text-red-800">
+                  {createOrganizationMutation.error instanceof Error ? createOrganizationMutation.error.message : 'Não foi possível criar a organização.'}
+                </Alert>
+              ) : null}
+              <Button
+                type="button"
+                onClick={() => void createOrganizationMutation.mutateAsync()}
+                disabled={createOrganizationMutation.isPending || newOrganizationName.trim().length < 2}
+              >
+                {createOrganizationMutation.isPending ? 'Criando...' : 'Criar organização'}
+              </Button>
+            </div>
+          ) : null}
+          {!prospectingMockMode && organizations.data && organizations.data.length > 0 ? (
+            <label className="block max-w-xl text-sm font-medium text-slate-700">
+              Workspace
+              <select
+                className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                value={selectedOrganization?.id ?? ''}
+                onChange={(event) => setSelectedOrganizationId(event.target.value)}
+              >
+                {organizations.data.map((organization) => (
+                  <option key={organization.id} value={organization.id}>{organization.name}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      {selectedOrganization ? (
+        <OrganizationAIConfiguration
+          key={selectedOrganization.id}
+          organizationId={selectedOrganization.id}
+        />
+      ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Segurança e isolamento</CardTitle>
+          <CardDescription>As políticas do banco limitam a configuração à organização correta.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-start gap-3 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-950">
+          <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
+          Somente owner/admin pode gravar serviços, ICP e perfil da organização. Membros podem consultar os dados autorizados;
+          as Edge Functions validam novamente a associação antes de usar essas informações.
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function OrganizationAIConfiguration({ organizationId }: { organizationId: string }) {
+  const settings = useQuery({
+    queryKey: ['organization-ai-settings', organizationId],
+    queryFn: () => getOrganizationAISettings(organizationId),
+    retry: false,
+  })
+
+  if (settings.isLoading) return <Skeleton className="h-80 w-full rounded-xl" />
+  if (settings.isError) {
+    return <Alert className="border-red-200 bg-red-50 text-red-800">{settings.error.message}</Alert>
+  }
+  if (!settings.data) return null
+
+  return (
+    <div className="space-y-6">
+      <ICPSettingsCard organizationId={organizationId} initial={settings.data.icp} />
+      <ServicesSettingsCard organizationId={organizationId} initial={settings.data.services} />
+      <VoiceSettingsCard organizationId={organizationId} initial={settings.data.profile} />
+    </div>
+  )
+}
+
+function ICPSettingsCard({
+  organizationId,
+  initial,
+}: {
+  organizationId: string
+  initial: OrganizationAISettings['icp']
+}) {
+  const queryClient = useQueryClient()
+  const [form, setForm] = useState(() => {
+    const settings = initial ?? emptyICP()
+    return { ...settings, weights: { actionScore: configuredActionWeights(settings.weights ?? {}) } }
+  })
+  const actionWeights = configuredActionWeights(form.weights)
+  const weightsTotal = Object.values(actionWeights).reduce((total, weight) => total + weight, 0)
+  const save = useMutation({
+    mutationFn: () => saveOrganizationICP(organizationId, form),
+    onSuccess: async (saved) => {
+      setForm({ ...saved, weights: { actionScore: configuredActionWeights(saved.weights ?? {}) } })
+      await queryClient.invalidateQueries({ queryKey: ['organization-ai-settings', organizationId] })
+      await queryClient.invalidateQueries({ queryKey: ['ai-analysis'] })
+    },
+  })
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    save.mutate()
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Perfil de cliente ideal (ICP)</CardTitle>
+        <CardDescription>Os critérios ajudam a qualificar oportunidades; não substituem dados ausentes da empresa.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField label="Nome do perfil" value={form.name} onChange={(value) => setForm((current) => ({ ...current, name: value }))} required maxLength={120} />
+            <TextField label="Score mínimo (0–100)" type="number" min={0} max={100} value={String(form.minimum_score)} onChange={(value) => setForm((current) => ({ ...current, minimum_score: Number(value) }))} required />
+          </div>
+          <TextAreaField label="Descrição" value={form.description ?? ''} onChange={(value) => setForm((current) => ({ ...current, description: value || null }))} maxLength={800} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ListField label="Segmentos prioritários" value={form.target_segments} onChange={(value) => setForm((current) => ({ ...current, target_segments: toList(value) }))} />
+            <ListField label="Localizações prioritárias" value={form.target_locations} onChange={(value) => setForm((current) => ({ ...current, target_locations: toList(value) }))} />
+            <ListField label="Porte desejado" value={form.target_company_sizes} onChange={(value) => setForm((current) => ({ ...current, target_company_sizes: toList(value) }))} />
+            <ListField label="Serviços prioritários" value={form.preferred_services} onChange={(value) => setForm((current) => ({ ...current, preferred_services: toList(value) }))} />
+            <ListField label="Sinais desejados" value={form.ideal_signals} onChange={(value) => setForm((current) => ({ ...current, ideal_signals: toList(value) }))} />
+            <ListField label="Sinais de desqualificação" value={form.negative_signals} onChange={(value) => setForm((current) => ({ ...current, negative_signals: toList(value) }))} />
+          </div>
+          <div className="space-y-3 rounded-lg border border-slate-200 p-4">
+            <div>
+              <h3 className="font-medium text-slate-900">Pesos do Action Score</h3>
+              <p className="mt-1 text-xs text-slate-600">Os pesos são normalizados no cálculo; pelo menos um precisa ser maior que zero. O score mínimo sinaliza perfis abaixo do corte, mas não remove leads automaticamente.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {actionScoreWeightFields.map(({ key, label }) => (
+                <TextField
+                  key={key}
+                  label={`${label} (0–100)`}
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={String(actionWeights[key])}
+                  onChange={(value) => setForm((current) => ({
+                    ...current,
+                    weights: {
+                      ...current.weights,
+                      actionScore: { ...configuredActionWeights(current.weights), [key]: Number(value) },
+                    },
+                  }))}
+                />
+              ))}
+            </div>
+          </div>
+          <SaveFeedback error={save.error?.message} success={save.isSuccess ? 'ICP salvo. Novas análises usarão estes critérios.' : null} />
+          <Button type="submit" disabled={save.isPending || !form.name.trim() || weightsTotal === 0}>
+            <Save aria-hidden="true" className="h-4 w-4" />{save.isPending ? 'Salvando…' : 'Salvar ICP'}
+          </Button>
+          {weightsTotal === 0 ? <p className="text-sm text-amber-800">Defina pelo menos um peso para calcular o Action Score.</p> : null}
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+type ServiceFormState = {
+  id?: string
+  name: string
+  description: string
+  targetSegments: string
+  sellingPoints: string
+}
+
+function emptyServiceForm(): ServiceFormState {
+  return { name: '', description: '', targetSegments: '', sellingPoints: '' }
+}
+
+function serviceInput(form: ServiceFormState): SaveServiceInput {
+  return {
+    ...(form.id ? { id: form.id } : {}),
+    name: form.name.trim(),
+    description: form.description.trim() || null,
+    target_segments: toList(form.targetSegments),
+    selling_points: toList(form.sellingPoints),
+  }
+}
+
+function ServicesSettingsCard({
+  organizationId,
+  initial,
+}: {
+  organizationId: string
+  initial: OrganizationService[]
+}) {
+  const queryClient = useQueryClient()
+  const [services, setServices] = useState(initial)
+  const [form, setForm] = useState<ServiceFormState>(emptyServiceForm)
+  const save = useMutation({
+    mutationFn: () => saveOrganizationService(organizationId, serviceInput(form)),
+    onSuccess: async (saved) => {
+      setServices((current) => current.some((service) => service.id === saved.id)
+        ? current.map((service) => service.id === saved.id ? saved : service)
+        : [...current, saved].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR')))
+      setForm(emptyServiceForm())
+      await queryClient.invalidateQueries({ queryKey: ['organization-ai-settings', organizationId] })
+    },
+  })
+  const toggle = useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) => setOrganizationServiceActive(organizationId, id, active),
+    onSuccess: async (saved) => {
+      setServices((current) => current.map((service) => service.id === saved.id ? saved : service))
+      await queryClient.invalidateQueries({ queryKey: ['organization-ai-settings', organizationId] })
+    },
+  })
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    save.mutate()
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Serviços oferecidos</CardTitle>
+        <CardDescription>A IA só recomendará serviços cadastrados e ativos nesta lista.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <form className="space-y-4 rounded-lg bg-slate-50 p-4" onSubmit={onSubmit}>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="font-medium text-slate-900">{form.id ? 'Editar serviço' : 'Adicionar serviço'}</h3>
+            {form.id ? (
+              <Button type="button" variant="ghost" size="sm" onClick={() => setForm(emptyServiceForm())}>
+                <X aria-hidden="true" className="h-4 w-4" />Cancelar edição
+              </Button>
+            ) : null}
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField label="Nome do serviço" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} required maxLength={120} />
+            <TextField label="Descrição" value={form.description} onChange={(description) => setForm((current) => ({ ...current, description }))} maxLength={500} />
+            <ListField label="Segmentos atendidos" value={toList(form.targetSegments)} onChange={(value) => setForm((current) => ({ ...current, targetSegments: value }))} />
+            <ListField label="Pontos de venda" value={toList(form.sellingPoints)} onChange={(value) => setForm((current) => ({ ...current, sellingPoints: value }))} />
+          </div>
+          <Button type="submit" disabled={save.isPending || !form.name.trim()}>
+            {form.id ? <Save aria-hidden="true" className="h-4 w-4" /> : <Plus aria-hidden="true" className="h-4 w-4" />}
+            {save.isPending ? 'Salvando…' : form.id ? 'Salvar serviço' : 'Adicionar serviço'}
+          </Button>
+          <SaveFeedback error={save.error?.message} success={save.isSuccess ? 'Serviço salvo.' : null} />
+        </form>
+
+        {services.length ? (
+          <ul className="divide-y divide-slate-200">
+            {services.map((service) => (
+              <li key={service.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-medium text-slate-900">{service.name}</h3>
+                    <span className={service.active ? 'rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900' : 'rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700'}>
+                      {service.active ? 'Ativo para recomendações' : 'Pausado'}
+                    </span>
+                  </div>
+                  {service.description ? <p className="mt-1 text-sm text-slate-600">{service.description}</p> : null}
+                  {service.selling_points.length ? <p className="mt-1 text-xs text-slate-500">Diferenciais: {service.selling_points.join(' · ')}</p> : null}
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setForm({
+                    id: service.id,
+                    name: service.name,
+                    description: service.description ?? '',
+                    targetSegments: listValue(service.target_segments),
+                    sellingPoints: listValue(service.selling_points),
+                  })}>
+                    <Pencil aria-hidden="true" className="h-4 w-4" />Editar
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" disabled={toggle.isPending} onClick={() => toggle.mutate({ id: service.id, active: !service.active })}>
+                    {service.active ? <ToggleLeft aria-hidden="true" className="h-4 w-4" /> : <ToggleRight aria-hidden="true" className="h-4 w-4" />}
+                    {service.active ? 'Pausar' : 'Ativar'}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600">
+            Nenhum serviço cadastrado. Adicione uma oferta para que a IA possa sugeri-la sem inventar o que você vende.
+          </p>
+        )}
+        {toggle.error ? <SaveFeedback error={toggle.error.message} /> : null}
+      </CardContent>
+    </Card>
+  )
+}
+
+function VoiceSettingsCard({
+  organizationId,
+  initial,
+}: {
+  organizationId: string
+  initial: OrganizationAIProfile | null
+}) {
+  const queryClient = useQueryClient()
+  const [form, setForm] = useState(() => initial ?? emptyProfile())
+  const save = useMutation({
+    mutationFn: () => {
+      const input: SaveProfileInput = {
+        ...form,
+        company_name: form.company_name?.trim() || null,
+        company_description: form.company_description?.trim() || null,
+        target_audience: form.target_audience?.trim() || null,
+        sales_method: form.sales_method?.trim() || null,
+        signature: form.signature?.trim() || null,
+      }
+      return saveOrganizationAIProfile(organizationId, input)
+    },
+    onSuccess: async (saved) => {
+      setForm(saved)
+      await queryClient.invalidateQueries({ queryKey: ['organization-ai-settings', organizationId] })
+    },
+  })
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    save.mutate()
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Voz comercial da IA</CardTitle>
+        <CardDescription>Estas preferências orientam análises e rascunhos. Não autorizam envio automático.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField label="Nome profissional ou da empresa" value={form.company_name ?? ''} onChange={(value) => setForm((current) => ({ ...current, company_name: value || null }))} maxLength={120} />
+            <TextField label="Público-alvo" value={form.target_audience ?? ''} onChange={(value) => setForm((current) => ({ ...current, target_audience: value || null }))} maxLength={250} />
+            <TextField label="Tom" value={form.tone} onChange={(value) => setForm((current) => ({ ...current, tone: value }))} required maxLength={80} />
+            <TextField label="Estilo de escrita" value={form.style} onChange={(value) => setForm((current) => ({ ...current, style: value }))} required maxLength={80} />
+            <TextField label="Método comercial" value={form.sales_method ?? ''} onChange={(value) => setForm((current) => ({ ...current, sales_method: value || null }))} maxLength={300} />
+            <TextField label="Assinatura" value={form.signature ?? ''} onChange={(value) => setForm((current) => ({ ...current, signature: value || null }))} maxLength={160} />
+          </div>
+          <TextAreaField label="Descrição do negócio" value={form.company_description ?? ''} onChange={(value) => setForm((current) => ({ ...current, company_description: value || null }))} maxLength={800} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ListField label="Frases preferidas" value={form.preferred_phrases} onChange={(value) => setForm((current) => ({ ...current, preferred_phrases: toList(value) }))} />
+            <ListField label="Frases proibidas" value={form.forbidden_phrases} onChange={(value) => setForm((current) => ({ ...current, forbidden_phrases: toList(value) }))} />
+          </div>
+          <SaveFeedback error={save.error?.message} success={save.isSuccess ? 'Perfil comercial salvo.' : null} />
+          <Button type="submit" disabled={save.isPending || !form.tone.trim() || !form.style.trim()}>
+            <Save aria-hidden="true" className="h-4 w-4" />{save.isPending ? 'Salvando…' : 'Salvar perfil de voz'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+  ...props
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+} & Omit<React.ComponentProps<'input'>, 'value' | 'onChange'>) {
+  return (
+    <label className="block text-sm font-medium text-slate-700">
+      {label}
+      <input
+        className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        {...props}
+      />
+    </label>
+  )
+}
+
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  ...props
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+} & Omit<React.ComponentProps<'textarea'>, 'value' | 'onChange'>) {
+  return (
+    <label className="block text-sm font-medium text-slate-700">
+      {label}
+      <textarea
+        className="mt-1 min-h-20 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        {...props}
+      />
+    </label>
+  )
+}
+
+function ListField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string[]
+  onChange: (value: string) => void
+}) {
+  return (
+    <TextAreaField
+      label={label}
+      value={listValue(value)}
+      onChange={onChange}
+      placeholder={LIST_FIELD_HINT}
+      maxLength={1000}
+    />
+  )
+}
+
+function SaveFeedback({ error, success }: { error?: string; success?: string | null }) {
+  if (error) {
+    return (
+      <p role="alert" className="flex items-start gap-2 text-sm text-red-700">
+        <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />{error}
+      </p>
+    )
+  }
+  if (success) {
+    return (
+      <p role="status" className="flex items-center gap-2 text-sm text-emerald-800">
+        <Check aria-hidden="true" className="h-4 w-4" />{success}
+      </p>
+    )
+  }
+  return null
+}

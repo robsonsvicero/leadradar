@@ -1,0 +1,23 @@
+[functions.prospecting-search]
+verify_jwt = true
+
+[functions.generate-reply-assistant]
+verify_jwt = true
+
+[functions.analyze-lead]
+verify_jwt = true
+
+[functions.analyze-lead-deep]
+verify_jwt = true
+
+[functions.generate-outreach]
+verify_jwt = true
+
+[functions.generate-follow-up]
+verify_jwt = true
+
+[functions.ai-feedback]
+verify_jwt = true
+
+[functions.health]
+verify_jwt = false
