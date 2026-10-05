@@ -120,8 +120,8 @@ export function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <header>
-        <h2 className="text-3xl font-semibold text-slate-900">Configurações comerciais</h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <h2 className="text-3xl font-semibold text-foreground">Configurações comerciais</h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Defina o que você oferece, quais empresas quer atender e como a IA deve representar sua abordagem.
         </p>
       </header>
@@ -137,19 +137,19 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent>
           {prospectingMockMode ? (
-            <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+            <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
               As configurações comerciais são persistidas no Supabase e ficam indisponíveis no modo de demonstração.
               Desative o modo demo para editar dados reais.
             </Alert>
           ) : null}
           {!prospectingMockMode && organizations.isLoading ? <Skeleton className="h-11 w-full" /> : null}
           {!prospectingMockMode && organizations.isError ? (
-            <Alert className="border-red-200 bg-red-50 text-red-800">
+            <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
               {organizations.error.message}
             </Alert>
           ) : null}
           {!prospectingMockMode && organizations.data?.length === 0 ? (
-            <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+            <div className="space-y-4 rounded-xl border border-warm/30 bg-warm/10 p-4 text-warm-foreground">
               {user?.isPlatformAdmin ? (
                 <>
                   <p>
@@ -157,19 +157,19 @@ export function SettingsPage() {
                     Crie um workspace interno para ativar prospecção e configurações comerciais.
                   </p>
                   <div className="grid gap-3 md:grid-cols-2">
-                    <label className="text-sm font-medium text-slate-700">
+                    <label className="text-sm font-medium text-foreground">
                       Nome do workspace interno
                       <input
-                        className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                        className="mt-1 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         value={newOrganizationName}
                         onChange={(event) => setNewOrganizationName(event.target.value)}
                         placeholder="Ex.: Minha empresa"
                       />
                     </label>
-                    <label className="text-sm font-medium text-slate-700">
+                    <label className="text-sm font-medium text-foreground">
                       Slug
                       <input
-                        className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                        className="mt-1 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         value={newOrganizationSlug}
                         onChange={(event) => setNewOrganizationSlug(event.target.value)}
                         placeholder="minha-empresa"
@@ -177,7 +177,7 @@ export function SettingsPage() {
                     </label>
                   </div>
                   {createOrganizationMutation.isError ? (
-                    <Alert className="border-red-200 bg-red-50 text-red-800">
+                    <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
                       {createOrganizationMutation.error instanceof Error ? createOrganizationMutation.error.message : 'Não foi possível criar o workspace.'}
                     </Alert>
                   ) : null}
@@ -198,10 +198,10 @@ export function SettingsPage() {
             </div>
           ) : null}
           {!prospectingMockMode && organizations.data && organizations.data.length > 0 ? (
-            <label className="block max-w-xl text-sm font-medium text-slate-700">
+            <label className="block max-w-xl text-sm font-medium text-foreground">
               Workspace
               <select
-                className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                className="mt-1 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 value={selectedOrganization?.id ?? ''}
                 onChange={(event) => setSelectedOrganizationId(event.target.value)}
               >
@@ -226,7 +226,7 @@ export function SettingsPage() {
           <CardTitle>Segurança e isolamento</CardTitle>
           <CardDescription>As políticas do banco limitam a configuração à organização correta.</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-start gap-3 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-950">
+        <CardContent className="flex items-start gap-3 rounded-lg bg-success/10 p-4 text-sm text-success-foreground">
           <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           Somente owner/admin pode gravar serviços, ICP e perfil da organização. Membros podem consultar os dados autorizados;
           as Edge Functions validam novamente a associação antes de usar essas informações.
@@ -260,27 +260,27 @@ function UserApprovalsCard() {
       <CardContent className="space-y-4">
         {pendingUsers.isLoading ? <Skeleton className="h-16 w-full" /> : null}
         {pendingUsers.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800">
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
             {pendingUsers.error.message}
           </Alert>
         ) : null}
         {decision.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800">
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
             {decision.error.message}
           </Alert>
         ) : null}
         {pendingUsers.data?.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">Não há cadastros aguardando aprovação.</p>
+          <p className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">Não há cadastros aguardando aprovação.</p>
         ) : null}
         {pendingUsers.data?.map((pendingUser) => (
           <div
             key={pendingUser.id}
-            className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0">
-              <p className="truncate font-medium text-slate-900">{pendingUser.full_name || 'Nome não informado'}</p>
-              <p className="truncate text-sm text-slate-600">{pendingUser.email}</p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="truncate font-medium text-foreground">{pendingUser.full_name || 'Nome não informado'}</p>
+              <p className="truncate text-sm text-muted-foreground">{pendingUser.email}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Cadastro em {new Date(pendingUser.created_at).toLocaleDateString('pt-BR')}
               </p>
             </div>
@@ -319,7 +319,7 @@ function OrganizationAIConfiguration({ organizationId }: { organizationId: strin
 
   if (settings.isLoading) return <Skeleton className="h-80 w-full rounded-xl" />
   if (settings.isError) {
-    return <Alert className="border-red-200 bg-red-50 text-red-800">{settings.error.message}</Alert>
+    return <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{settings.error.message}</Alert>
   }
   if (!settings.data) return null
 
@@ -376,7 +376,7 @@ function ICPSettingsCard({
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <ListField label="Segmentos prioritários (B2B)" value={form.target_segments} onChange={(value) => setForm((current) => ({ ...current, target_segments: toList(value) }))} />
-              <p className="mt-1 text-xs text-slate-500">Ex.: academias, clínicas ou empresas. Não informe consumidores finais.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Ex.: academias, clínicas ou empresas. Não informe consumidores finais.</p>
             </div>
             <ListField label="Localizações prioritárias" value={form.target_locations} onChange={(value) => setForm((current) => ({ ...current, target_locations: toList(value) }))} />
             <ListField label="Porte desejado" value={form.target_company_sizes} onChange={(value) => setForm((current) => ({ ...current, target_company_sizes: toList(value) }))} />
@@ -384,10 +384,10 @@ function ICPSettingsCard({
             <ListField label="Sinais desejados" value={form.ideal_signals} onChange={(value) => setForm((current) => ({ ...current, ideal_signals: toList(value) }))} />
             <ListField label="Sinais de desqualificação" value={form.negative_signals} onChange={(value) => setForm((current) => ({ ...current, negative_signals: toList(value) }))} />
           </div>
-          <div className="space-y-3 rounded-lg border border-slate-200 p-4">
+          <div className="space-y-3 rounded-lg border border-border p-4">
             <div>
-              <h3 className="font-medium text-slate-900">Pesos do Action Score</h3>
-              <p className="mt-1 text-xs text-slate-600">Os pesos são normalizados no cálculo; pelo menos um precisa ser maior que zero. O score mínimo sinaliza perfis abaixo do corte, mas não remove leads automaticamente.</p>
+              <h3 className="font-medium text-foreground">Pesos do Action Score</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Os pesos são normalizados no cálculo; pelo menos um precisa ser maior que zero. O score mínimo sinaliza perfis abaixo do corte, mas não remove leads automaticamente.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {actionScoreWeightFields.map(({ key, label }) => (
@@ -413,7 +413,7 @@ function ICPSettingsCard({
           <Button type="submit" disabled={save.isPending || !form.name.trim() || weightsTotal === 0}>
             <Save aria-hidden="true" className="h-4 w-4" />{save.isPending ? 'Salvando…' : 'Salvar ICP'}
           </Button>
-          {weightsTotal === 0 ? <p className="text-sm text-amber-800">Defina pelo menos um peso para calcular o Action Score.</p> : null}
+          {weightsTotal === 0 ? <p className="text-sm text-warm-foreground">Defina pelo menos um peso para calcular o Action Score.</p> : null}
         </form>
       </CardContent>
     </Card>
@@ -493,9 +493,9 @@ function ServicesSettingsCard({
         <CardDescription>Cadastre em “Segmentos atendidos” as empresas ou profissionais B2B compatíveis com cada serviço. A aderência não representa intenção de compra.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <form className="space-y-4 rounded-lg bg-slate-50 p-4" onSubmit={onSubmit}>
+        <form className="space-y-4 rounded-lg bg-muted p-4" onSubmit={onSubmit}>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="font-medium text-slate-900">{form.id ? 'Editar serviço' : 'Adicionar serviço'}</h3>
+            <h3 className="font-medium text-foreground">{form.id ? 'Editar serviço' : 'Adicionar serviço'}</h3>
             {form.id ? (
               <Button type="button" variant="ghost" size="sm" onClick={() => setForm(emptyServiceForm())}>
                 <X aria-hidden="true" className="h-4 w-4" />Cancelar edição
@@ -521,13 +521,13 @@ function ServicesSettingsCard({
               <li key={service.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-medium text-slate-900">{service.name}</h3>
-                    <span className={service.active ? 'rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900' : 'rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700'}>
+                    <h3 className="font-medium text-foreground">{service.name}</h3>
+                    <span className={service.active ? 'rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success-foreground' : 'rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground'}>
                       {service.active ? 'Ativo para recomendações' : 'Pausado'}
                     </span>
                   </div>
-                  {service.description ? <p className="mt-1 text-sm text-slate-600">{service.description}</p> : null}
-                  {service.selling_points.length ? <p className="mt-1 text-xs text-slate-500">Diferenciais: {service.selling_points.join(' · ')}</p> : null}
+                  {service.description ? <p className="mt-1 text-sm text-muted-foreground">{service.description}</p> : null}
+                  {service.selling_points.length ? <p className="mt-1 text-xs text-muted-foreground">Diferenciais: {service.selling_points.join(' · ')}</p> : null}
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button type="button" variant="outline" size="sm" onClick={() => setForm({
@@ -561,27 +561,27 @@ function ServicesSettingsCard({
             ))}
           </ul>
         ) : (
-          <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600">
+          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
             Nenhum serviço cadastrado. Adicione uma oferta para que a IA possa sugeri-la sem inventar o que você vende.
           </p>
         )}
         {toggle.error ? <SaveFeedback error={toggle.error.message} /> : null}
       </CardContent>
       {pendingDeletion ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/40 p-4">
           <section
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="delete-service-title"
             aria-describedby="delete-service-description"
-            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
           >
-            <h3 id="delete-service-title" className="text-lg font-semibold text-slate-900">Excluir este serviço?</h3>
-            <p id="delete-service-description" className="mt-2 text-sm leading-6 text-slate-600">
+            <h3 id="delete-service-title" className="text-lg font-semibold text-foreground">Excluir este serviço?</h3>
+            <p id="delete-service-description" className="mt-2 text-sm leading-6 text-muted-foreground">
               “{pendingDeletion.name}” será removido dos serviços oferecidos e deixará de ser considerado em novas recomendações. Esta ação não pode ser desfeita.
             </p>
             {remove.isError ? (
-              <Alert className="mt-4 border-red-200 bg-red-50 text-red-800">
+              <Alert className="mt-4 border-destructive/30 bg-destructive/10 text-destructive">
                 {remove.error instanceof Error ? remove.error.message : 'Não foi possível excluir o serviço.'}
               </Alert>
             ) : null}
@@ -688,10 +688,10 @@ function TextField({
   onChange: (value: string) => void
 } & Omit<React.ComponentProps<'input'>, 'value' | 'onChange'>) {
   return (
-    <label className="block text-sm font-medium text-slate-700">
+    <label className="block text-sm font-medium text-foreground">
       {label}
       <input
-        className="mt-1 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-1 h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         {...props}
@@ -711,10 +711,10 @@ function TextAreaField({
   onChange: (value: string) => void
 } & Omit<React.ComponentProps<'textarea'>, 'value' | 'onChange'>) {
   return (
-    <label className="block text-sm font-medium text-slate-700">
+    <label className="block text-sm font-medium text-foreground">
       {label}
       <textarea
-        className="mt-1 min-h-20 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+        className="mt-1 min-h-20 w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         {...props}
@@ -746,14 +746,14 @@ function ListField({
 function SaveFeedback({ error, success }: { error?: string; success?: string | null }) {
   if (error) {
     return (
-      <p role="alert" className="flex items-start gap-2 text-sm text-red-700">
+      <p role="alert" className="flex items-start gap-2 text-sm text-destructive">
         <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />{error}
       </p>
     )
   }
   if (success) {
     return (
-      <p role="status" className="flex items-center gap-2 text-sm text-emerald-800">
+      <p role="status" className="flex items-center gap-2 text-sm text-success-foreground">
         <Check aria-hidden="true" className="h-4 w-4" />{success}
       </p>
     )

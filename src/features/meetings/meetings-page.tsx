@@ -156,7 +156,7 @@ export function MeetingsPage() {
   if (workspace.isLoading) return <Skeleton className="h-[32rem] w-full rounded-xl" />
   if (workspace.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -178,8 +178,8 @@ export function MeetingsPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Reuniões</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Reuniões</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Agende conversas comerciais ligadas aos leads e registre quando forem realizadas ou canceladas.
           </p>
         </div>
@@ -195,18 +195,18 @@ export function MeetingsPage() {
         </Button>
       </header>
 
-      <Alert className="border-sky-200 bg-sky-50 text-sky-950">
+      <Alert className="border-primary/30 bg-accent/50 text-primary">
         A agenda é interna. Ela não cria eventos no Google Calendar, não envia convites e não dispara lembretes.
       </Alert>
 
       {organizations.length === 0 ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Sua conta ainda não pertence a uma organização. Peça ao administrador para adicioná-la antes de agendar reuniões.
         </Alert>
       ) : null}
 
       {mutationError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-900">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           <p className="font-semibold">A alteração não foi salva.</p>
           <p className="mt-1">{mutationError.message}</p>
         </Alert>
@@ -216,15 +216,15 @@ export function MeetingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {editingMeetingId
-              ? <Pencil aria-hidden="true" className="h-5 w-5 text-sky-700" />
-              : <CalendarPlus aria-hidden="true" className="h-5 w-5 text-sky-700" />}
+              ? <Pencil aria-hidden="true" className="h-5 w-5 text-primary" />
+              : <CalendarPlus aria-hidden="true" className="h-5 w-5 text-primary" />}
             {editingMeetingId ? 'Editar reunião' : 'Agendar reunião'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {workspace.data?.leads.length ? (
             <form onSubmit={handleSchedule} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <label className="text-sm font-medium text-slate-800">
+              <label className="text-sm font-medium text-foreground">
                 Organização
                 <Select value={selectedOrganizationId} onValueChange={(value) => {
                   setOrganizationId(value)
@@ -238,7 +238,7 @@ export function MeetingsPage() {
                   </SelectContent>
                 </Select>
               </label>
-              <label className="text-sm font-medium text-slate-800">
+              <label className="text-sm font-medium text-foreground">
                 Lead
                 <Select value={leadId} onValueChange={setLeadId} disabled={Boolean(editingMeetingId)}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione um lead" /></SelectTrigger>
@@ -249,7 +249,7 @@ export function MeetingsPage() {
                   </SelectContent>
                 </Select>
               </label>
-              <label className="text-sm font-medium text-slate-800">
+              <label className="text-sm font-medium text-foreground">
                 Título
                 <Input
                   className="mt-1"
@@ -260,11 +260,11 @@ export function MeetingsPage() {
                   required
                 />
               </label>
-              <label className="text-sm font-medium text-slate-800">
+              <label className="text-sm font-medium text-foreground">
                 Data e horário
                 <Input className="mt-1" type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} required />
               </label>
-              <label className="text-sm font-medium text-slate-800">
+              <label className="text-sm font-medium text-foreground">
                 Duração
                 <Select value={durationMinutes} onValueChange={setDurationMinutes}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -275,7 +275,7 @@ export function MeetingsPage() {
                   </SelectContent>
                 </Select>
               </label>
-              <label className="text-sm font-medium text-slate-800">
+              <label className="text-sm font-medium text-foreground">
                 Link da reunião (opcional)
                 <Input
                   className="mt-1"
@@ -287,10 +287,10 @@ export function MeetingsPage() {
                   maxLength={2048}
                 />
               </label>
-              <label className="text-sm font-medium text-slate-800 md:col-span-2 xl:col-span-3">
+              <label className="text-sm font-medium text-foreground md:col-span-2 xl:col-span-3">
                 Pauta ou observações (opcional)
                 <textarea
-                  className="mt-1 min-h-20 w-full rounded-md border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                  className="mt-1 min-h-20 w-full rounded-md border border-border bg-card p-3 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   maxLength={4000}
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
@@ -298,7 +298,7 @@ export function MeetingsPage() {
                 />
               </label>
               <div className="flex items-center justify-between gap-3 md:col-span-2 xl:col-span-3">
-                <p className="text-xs leading-5 text-slate-600">Horário exibido conforme o fuso local do navegador.</p>
+                <p className="text-xs leading-5 text-muted-foreground">Horário exibido conforme o fuso local do navegador.</p>
                 <div className="flex gap-2">
                   {editingMeetingId ? (
                     <Button type="button" variant="outline" onClick={cancelEdit} disabled={updateMutation.isPending}>
@@ -318,7 +318,7 @@ export function MeetingsPage() {
               </div>
             </form>
           ) : (
-            <p className="text-sm leading-6 text-slate-700">
+            <p className="text-sm leading-6 text-foreground">
               Ainda não há leads disponíveis para associar a uma reunião. Adicione leads à organização para continuar.
             </p>
           )}
@@ -327,7 +327,7 @@ export function MeetingsPage() {
 
       <section aria-labelledby="meeting-list-title" className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 id="meeting-list-title" className="text-xl font-semibold text-slate-900">Agenda comercial</h3>
+          <h3 id="meeting-list-title" className="text-xl font-semibold text-foreground">Agenda comercial</h3>
           <div className="flex flex-wrap gap-2" aria-label="Filtrar reuniões">
             {meetingFilters.map((option) => (
               <Button
@@ -345,7 +345,7 @@ export function MeetingsPage() {
         </div>
 
         {visibleMeetings.length ? (
-          <ul className="divide-y divide-slate-200 border-y border-slate-200">
+          <ul className="divide-y divide-slate-200 border-y border-border">
             {visibleMeetings.map((meeting) => (
               <li key={meeting.id} className="py-4">
                 <MeetingRow
@@ -368,19 +368,19 @@ export function MeetingsPage() {
             ))}
           </ul>
         ) : (
-          <div className="border-y border-slate-200 py-10 text-center">
-            <CalendarClock aria-hidden="true" className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-3 text-sm font-medium text-slate-800">
+          <div className="border-y border-border py-10 text-center">
+            <CalendarClock aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
+            <p className="mt-3 text-sm font-medium text-foreground">
               {filter === 'scheduled' ? 'Nenhuma reunião agendada' : `Nenhuma reunião ${statusLabel(filter).toLocaleLowerCase('pt-BR')}`}
             </p>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-muted-foreground">
               {filter === 'scheduled' ? 'As reuniões agendadas para seus leads aparecerão aqui.' : 'Os registros aparecerão aqui quando o status mudar.'}
             </p>
           </div>
         )}
       </section>
 
-      <p className="text-xs leading-5 text-slate-600">
+      <p className="text-xs leading-5 text-muted-foreground">
         Exibindo até 500 reuniões. Reagendamentos ficam registrados na timeline do lead; sincronização de agenda ainda não está habilitada.
       </p>
     </div>
@@ -405,26 +405,26 @@ function MeetingRow({
     <article className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex min-w-0 gap-4">
         <div className="hidden w-16 shrink-0 text-right sm:block" aria-hidden="true">
-          <p className="text-lg font-semibold tabular-nums text-slate-900">
+          <p className="text-lg font-semibold tabular-nums text-foreground">
             {Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(date)}
           </p>
-          <p className="text-xs tabular-nums text-slate-600">
+          <p className="text-xs tabular-nums text-muted-foreground">
             {Number.isNaN(endTime.getTime()) ? '' : new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(endTime)}
           </p>
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h4 className="font-semibold text-slate-900">{meeting.title}</h4>
+            <h4 className="font-semibold text-foreground">{meeting.title}</h4>
             <Badge variant={past ? 'warning' : meeting.status === 'completed' ? 'success' : meeting.status === 'cancelled' ? 'danger' : 'secondary'}>
               {past ? 'Horário passado' : statusLabel(meeting.status)}
             </Badge>
           </div>
           {meeting.lead_company_id ? (
-            <Link to={`/companies/${meeting.lead_company_id}`} className="mt-1 inline-block text-sm text-sky-800 underline underline-offset-4">
+            <Link to={`/companies/${meeting.lead_company_id}`} className="mt-1 inline-block text-sm text-primary underline underline-offset-4">
               {meeting.lead_name}
             </Link>
-          ) : <p className="mt-1 text-sm text-slate-700">{meeting.lead_name}</p>}
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+          ) : <p className="mt-1 text-sm text-foreground">{meeting.lead_name}</p>}
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
               <time dateTime={meeting.starts_at}>{formatMeetingDate(meeting.starts_at)}</time>
@@ -435,13 +435,13 @@ function MeetingRow({
               {meeting.organization_name}
             </span>
           </div>
-          {meeting.notes ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">{meeting.notes}</p> : null}
+          {meeting.notes ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground">{meeting.notes}</p> : null}
           {meeting.meeting_url ? (
             <a
               href={meeting.meeting_url}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-sky-800 underline underline-offset-4"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline underline-offset-4"
             >
               <Video aria-hidden="true" className="h-4 w-4" />
               Abrir link da reunião

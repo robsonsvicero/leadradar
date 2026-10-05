@@ -108,7 +108,7 @@ export function AISDRPage() {
 
   if (workspace.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -127,7 +127,7 @@ export function AISDRPage() {
   if (!data) return null
   if (!data.hasOrganization) {
     return (
-      <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+      <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
         Sua conta ainda não pertence a uma organização. Associe seu usuário a `organization_members` no Supabase para abrir o workspace.
       </Alert>
     )
@@ -152,15 +152,15 @@ export function AISDRPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       {data.demoMode ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Modo de demonstração: leads e tarefas locais podem ser fictícios. Rascunhos aprovados e recomendações de IA reais não são exibidos neste modo.
         </Alert>
       ) : null}
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">AI SDR</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">AI SDR</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Sua fila de trabalho comercial, reunida a partir de tarefas, leads e análises que você já solicitou.
             Nada é enviado automaticamente.
           </p>
@@ -171,20 +171,20 @@ export function AISDRPage() {
         </Button>
       </header>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-2 border-y border-slate-200 py-3 text-sm text-slate-600">
-        <span><strong className="text-slate-900">{data.openTaskCount}</strong> tarefas abertas</span>
-        <span><strong className="text-slate-900">{data.followUpCount}</strong> follow-ups registrados</span>
-        <span><strong className="text-slate-900">{data.approvedDraftCount}</strong> mensagens aprovadas, não enviadas</span>
+      <div className="flex flex-wrap gap-x-6 gap-y-2 border-y border-border py-3 text-sm text-muted-foreground">
+        <span><strong className="text-foreground">{data.openTaskCount}</strong> tarefas abertas</span>
+        <span><strong className="text-foreground">{data.followUpCount}</strong> follow-ups registrados</span>
+        <span><strong className="text-foreground">{data.approvedDraftCount}</strong> mensagens aprovadas, não enviadas</span>
       </div>
 
       <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.85fr)]">
         <section aria-labelledby="next-actions-title" className="min-w-0">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
-              <h3 id="next-actions-title" className="text-xl font-semibold text-slate-900">Próximas ações</h3>
-              <p className="mt-1 text-sm text-slate-600">Tarefas e recomendações geradas por análises existentes.</p>
+              <h3 id="next-actions-title" className="text-xl font-semibold text-foreground">Próximas ações</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Tarefas e recomendações geradas por análises existentes.</p>
             </div>
-            <Link to="/tasks" className="shrink-0 text-sm font-medium text-sky-800 underline decoration-sky-300 underline-offset-4 hover:text-sky-950">
+            <Link to="/tasks" className="shrink-0 text-sm font-medium text-primary underline decoration-sky-300 underline-offset-4 hover:text-primary">
               Ver tarefas
             </Link>
           </div>
@@ -221,9 +221,9 @@ export function AISDRPage() {
               </ul>
             ) : (
               <CardContent className="py-10 text-center">
-                <ListChecks aria-hidden="true" className="mx-auto h-9 w-9 text-slate-400" />
-                <h4 className="mt-3 font-semibold text-slate-900">Sua fila está vazia</h4>
-                <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-600">
+                <ListChecks aria-hidden="true" className="mx-auto h-9 w-9 text-muted-foreground" />
+                <h4 className="mt-3 font-semibold text-foreground">Sua fila está vazia</h4>
+                <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-muted-foreground">
                   Crie tarefas ou solicite uma análise na ficha de um lead. O workspace não dispara análises nem cria atividades por conta própria.
                 </p>
                 <Button asChild variant="outline" className="mt-4"><Link to="/leads">Abrir leads</Link></Button>
@@ -236,20 +236,20 @@ export function AISDRPage() {
           <section aria-labelledby="messages-ready-title">
             <div className="mb-3 flex items-end justify-between gap-3">
               <div>
-                <h3 id="messages-ready-title" className="text-lg font-semibold text-slate-900">Mensagens prontas</h3>
-                <p className="mt-1 text-sm text-slate-600">Aprovadas por você; nenhuma foi enviada.</p>
+                <h3 id="messages-ready-title" className="text-lg font-semibold text-foreground">Mensagens prontas</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Aprovadas por você; nenhuma foi enviada.</p>
               </div>
             </div>
             {approvedDrafts.length ? (
-              <ul className="divide-y divide-slate-200 border-y border-slate-200">
+              <ul className="divide-y divide-slate-200 border-y border-border">
                 {approvedDrafts.slice(0, 4).map((draft) => {
                   const lead = leadMap.get(draft.lead_id)
                   return (
                     <li key={draft.id} className="py-3">
                       <Link to={companyPath(lead?.company_id)} className="group flex items-center justify-between gap-3">
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-slate-900 group-hover:text-sky-800">{lead?.company_name ?? 'Lead removido'}</span>
-                          <span className="mt-1 block text-xs text-slate-600">{channelLabels[draft.channel]} · opção {draft.approved_variant === null ? '—' : draft.approved_variant + 1}</span>
+                          <span className="block truncate text-sm font-medium text-foreground group-hover:text-primary">{lead?.company_name ?? 'Lead removido'}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{channelLabels[draft.channel]} · opção {draft.approved_variant === null ? '—' : draft.approved_variant + 1}</span>
                         </span>
                         <Badge variant="success">Aprovada</Badge>
                       </Link>
@@ -258,7 +258,7 @@ export function AISDRPage() {
                 })}
               </ul>
             ) : (
-              <p className="border-y border-slate-200 py-4 text-sm leading-6 text-slate-600">
+              <p className="border-y border-border py-4 text-sm leading-6 text-muted-foreground">
                 Nenhuma mensagem aprovada. Gere e revise um rascunho na ficha do lead; a aprovação não dispara o envio.
               </p>
             )}
@@ -266,24 +266,24 @@ export function AISDRPage() {
 
           <section aria-labelledby="follow-ups-title">
             <div className="mb-3 flex items-center gap-2">
-              <CalendarClock aria-hidden="true" className="h-5 w-5 text-slate-600" />
-              <h3 id="follow-ups-title" className="text-lg font-semibold text-slate-900">Follow-ups</h3>
+              <CalendarClock aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+              <h3 id="follow-ups-title" className="text-lg font-semibold text-foreground">Follow-ups</h3>
             </div>
             {followUps.length ? (
-              <ul className="divide-y divide-slate-200 border-y border-slate-200">
+              <ul className="divide-y divide-slate-200 border-y border-border">
                 {followUps.slice(0, 4).map((task) => (
                   <li key={task.id} className="py-3">
-                    <Link to={task.lead_id ? leadHref(task.lead_id, data.leads) : '/tasks'} className="block text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-sky-800">
+                    <Link to={task.lead_id ? leadHref(task.lead_id, data.leads) : '/tasks'} className="block text-sm font-medium text-foreground underline decoration-slate-300 underline-offset-4 hover:text-primary">
                       {data.leads.find((lead) => lead.id === task.lead_id)?.company_name ?? task.title}
                     </Link>
-                    <p className={isOverdue(task.due_at) ? 'mt-1 text-xs font-medium text-red-700' : 'mt-1 text-xs text-slate-600'}>
+                    <p className={isOverdue(task.due_at) ? 'mt-1 text-xs font-medium text-destructive' : 'mt-1 text-xs text-muted-foreground'}>
                       {isOverdue(task.due_at) ? 'Prazo vencido · ' : ''}{formatDueDate(task.due_at)}
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="border-y border-slate-200 py-4 text-sm leading-6 text-slate-600">
+              <p className="border-y border-border py-4 text-sm leading-6 text-muted-foreground">
                 Nenhum follow-up está registrado. O sistema não agenda contatos automaticamente.
               </p>
             )}
@@ -291,14 +291,14 @@ export function AISDRPage() {
 
           <section aria-labelledby="replies-title">
             <div className="mb-3 flex items-center gap-2">
-              <MessageSquareText aria-hidden="true" className="h-5 w-5 text-slate-600" />
-              <h3 id="replies-title" className="text-lg font-semibold text-slate-900">Respostas para analisar</h3>
+              <MessageSquareText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+              <h3 id="replies-title" className="text-lg font-semibold text-foreground">Respostas para analisar</h3>
             </div>
-            <div className="border-y border-slate-200 py-4">
-              <p className="text-sm leading-6 text-slate-700">
+            <div className="border-y border-border py-4">
+              <p className="text-sm leading-6 text-foreground">
                 A caixa de entrada não está conectada. Você pode colar uma resposta manualmente na ficha do lead para classificá-la e revisar uma sugestão; nenhuma conversa é monitorada.
               </p>
-              <div className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-600">
+              <div className="mt-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 <CircleHelp aria-hidden="true" className="h-4 w-4" />O texto colado não é salvo no histórico; a análise ocorre somente quando solicitada
               </div>
             </div>
@@ -309,18 +309,18 @@ export function AISDRPage() {
       <section aria-labelledby="top-leads-title">
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 id="top-leads-title" className="text-xl font-semibold text-slate-900">Leads prioritários</h3>
-            <p className="mt-1 text-sm text-slate-600">Ordenados pelo Action Score salvo na análise de IA mais recente.</p>
+            <h3 id="top-leads-title" className="text-xl font-semibold text-foreground">Leads prioritários</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Ordenados pelo Action Score salvo na análise de IA mais recente.</p>
           </div>
-          <Link to="/leads" className="text-sm font-medium text-sky-800 underline decoration-sky-300 underline-offset-4 hover:text-sky-950">
+          <Link to="/leads" className="text-sm font-medium text-primary underline decoration-sky-300 underline-offset-4 hover:text-primary">
             Ver todos os leads
           </Link>
         </div>
 
         {analyzedLeads.length ? (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
             <table className="w-full min-w-[44rem] text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+              <thead className="border-b border-border bg-muted text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-semibold">Empresa</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Segmento / local</th>
@@ -333,15 +333,15 @@ export function AISDRPage() {
                 {analyzedLeads.map((lead) => (
                   <tr key={lead.id} className="align-middle">
                     <td className="px-4 py-3">
-                      <Link to={companyPath(lead.company_id)} className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-sky-800">
+                      <Link to={companyPath(lead.company_id)} className="font-medium text-foreground underline decoration-slate-300 underline-offset-4 hover:text-primary">
                         {lead.company_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{[lead.segment, lead.city].filter(Boolean).join(' · ') || 'Não informado'}</td>
-                    <td className="px-4 py-3"><span className="font-semibold tabular-nums text-slate-900">{lead.action_score}/100</span></td>
-                    <td className="max-w-sm px-4 py-3 text-slate-600">{lead.opportunity || 'Oportunidade não informada'}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{[lead.segment, lead.city].filter(Boolean).join(' · ') || 'Não informado'}</td>
+                    <td className="px-4 py-3"><span className="font-semibold tabular-nums text-foreground">{lead.action_score}/100</span></td>
+                    <td className="max-w-sm px-4 py-3 text-muted-foreground">{lead.opportunity || 'Oportunidade não informada'}</td>
                     <td className="px-4 py-3">
-                      <Link aria-label={`Abrir ${lead.company_name}`} to={companyPath(lead.company_id)} className="inline-flex rounded p-1 text-sky-800 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">
+                      <Link aria-label={`Abrir ${lead.company_name}`} to={companyPath(lead.company_id)} className="inline-flex rounded p-1 text-primary hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         <ExternalLink aria-hidden="true" className="h-4 w-4" />
                       </Link>
                     </td>
@@ -351,9 +351,9 @@ export function AISDRPage() {
             </table>
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-300 px-5 py-6">
-            <p className="font-medium text-slate-900">Ainda não há Action Scores de IA para priorizar.</p>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+          <div className="rounded-lg border border-dashed border-border px-5 py-6">
+            <p className="font-medium text-foreground">Ainda não há Action Scores de IA para priorizar.</p>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
               {leadsToReview.length
                 ? `${leadsToReview.length} lead(s) ainda aguardam análise. Abra um lead e solicite a análise quando quiser; ela não será iniciada automaticamente.`
                 : 'Quando você analisar leads, os maiores Action Scores aparecerão aqui.'}
@@ -365,18 +365,18 @@ export function AISDRPage() {
 
       <section aria-labelledby="recommendations-title">
         <div className="mb-3 flex items-center gap-2">
-          <Sparkles aria-hidden="true" className="h-5 w-5 text-sky-700" />
-          <h3 id="recommendations-title" className="text-xl font-semibold text-slate-900">Recomendações de IA</h3>
+          <Sparkles aria-hidden="true" className="h-5 w-5 text-primary" />
+          <h3 id="recommendations-title" className="text-xl font-semibold text-foreground">Recomendações de IA</h3>
         </div>
         {recommendations.length ? (
-          <ul className="divide-y divide-slate-200 border-y border-slate-200">
+          <ul className="divide-y divide-slate-200 border-y border-border">
             {recommendations.slice(0, 5).map((recommendation) => {
               const lead = leadMap.get(recommendation.leadId)
               return (
                 <li key={recommendation.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-900">{actionLabels[recommendation.action] ?? recommendation.action.replaceAll('_', ' ')} · {lead?.company_name}</p>
-                    <p className="mt-1 text-sm leading-5 text-slate-600">{recommendation.reason}</p>
+                    <p className="text-sm font-medium text-foreground">{actionLabels[recommendation.action] ?? recommendation.action.replaceAll('_', ' ')} · {lead?.company_name}</p>
+                    <p className="mt-1 text-sm leading-5 text-muted-foreground">{recommendation.reason}</p>
                   </div>
                   <Button asChild variant="outline" size="sm" className="shrink-0"><Link to={leadHref(recommendation.leadId, data.leads)}>Revisar recomendação<ArrowRight aria-hidden="true" className="h-4 w-4" /></Link></Button>
                 </li>
@@ -384,14 +384,14 @@ export function AISDRPage() {
             })}
           </ul>
         ) : (
-          <p className="border-y border-slate-200 py-4 text-sm leading-6 text-slate-600">
+          <p className="border-y border-border py-4 text-sm leading-6 text-muted-foreground">
             Ainda não há recomendações acionáveis de análises salvas. Solicite uma análise na ficha de uma empresa; o workspace apenas consulta o resultado existente.
           </p>
         )}
       </section>
 
       {completeTask.isError && completeTask.variables ? (
-        <p role="alert" className="text-sm text-red-700">{completeTask.error.message}</p>
+        <p role="alert" className="text-sm text-destructive">{completeTask.error.message}</p>
       ) : null}
     </div>
   )
@@ -415,16 +415,16 @@ function TaskQueueItem({
   return (
     <li className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex min-w-0 gap-3">
-        <Clock3 aria-hidden="true" className={isOverdue(task.due_at) ? 'mt-0.5 h-4 w-4 shrink-0 text-red-700' : 'mt-0.5 h-4 w-4 shrink-0 text-slate-500'} />
+        <Clock3 aria-hidden="true" className={isOverdue(task.due_at) ? 'mt-0.5 h-4 w-4 shrink-0 text-destructive' : 'mt-0.5 h-4 w-4 shrink-0 text-muted-foreground'} />
         <div className="min-w-0">
-          <Link to={href} className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-sky-800">
+          <Link to={href} className="font-medium text-foreground underline decoration-slate-300 underline-offset-4 hover:text-primary">
             {task.title}
           </Link>
-          <p className="mt-1 text-sm text-slate-600">{leadName ?? task.description ?? 'Sem lead associado'}</p>
-          <p className={isOverdue(task.due_at) ? 'mt-1 text-xs font-medium text-red-700' : 'mt-1 text-xs text-slate-600'}>
+          <p className="mt-1 text-sm text-muted-foreground">{leadName ?? task.description ?? 'Sem lead associado'}</p>
+          <p className={isOverdue(task.due_at) ? 'mt-1 text-xs font-medium text-destructive' : 'mt-1 text-xs text-muted-foreground'}>
             {isOverdue(task.due_at) ? 'Vencida · ' : ''}{formatDueDate(task.due_at)}
           </p>
-          {error ? <p role="alert" className="mt-2 text-xs text-red-700">{error}</p> : null}
+          {error ? <p role="alert" className="mt-2 text-xs text-destructive">{error}</p> : null}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2 pl-7 sm:pl-0">
@@ -452,11 +452,11 @@ function RecommendationQueueItem({
   return (
     <li className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex min-w-0 gap-3">
-        <Bot aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
+        <Bot aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="font-medium text-slate-900">{actionLabels[recommendation.action] ?? recommendation.action.replaceAll('_', ' ')} · {leadName}</p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">{recommendation.reason}</p>
-          <p className="mt-1 text-xs text-slate-500">Recomendação salva em {formatDate(recommendation.createdAt)}</p>
+          <p className="font-medium text-foreground">{actionLabels[recommendation.action] ?? recommendation.action.replaceAll('_', ' ')} · {leadName}</p>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">{recommendation.reason}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Recomendação salva em {formatDate(recommendation.createdAt)}</p>
         </div>
       </div>
       <Button asChild variant="outline" size="sm" className="shrink-0 self-start"><Link to={href}>Revisar<ArrowRight aria-hidden="true" className="h-4 w-4" /></Link></Button>
@@ -468,10 +468,10 @@ function ReviewLeadQueueItem({ leadName, href }: { leadName: string; href: strin
   return (
     <li className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 gap-3">
-        <FileSearch aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+        <FileSearch aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0">
-          <p className="font-medium text-slate-900">Revisar análise · {leadName}</p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">Este lead ainda não tem análise de IA. A análise só começa quando você a solicitar na ficha.</p>
+          <p className="font-medium text-foreground">Revisar análise · {leadName}</p>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">Este lead ainda não tem análise de IA. A análise só começa quando você a solicitar na ficha.</p>
         </div>
       </div>
       <Button asChild variant="outline" size="sm" className="shrink-0 self-start"><Link to={href}>Abrir ficha<ArrowRight aria-hidden="true" className="h-4 w-4" /></Link></Button>

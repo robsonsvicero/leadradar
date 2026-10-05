@@ -64,7 +64,7 @@ export function AIUsagePage() {
 
   if (usage.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -83,7 +83,7 @@ export function AIUsagePage() {
   if (!data) return null
   if (!data.hasOrganization) {
     return (
-      <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+      <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
         Sua conta ainda não pertence a uma organização; não há histórico de IA disponível para exibir.
       </Alert>
     )
@@ -106,22 +106,22 @@ export function AIUsagePage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       {data.demoMode ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           O modo de demonstração não armazena chamadas reais de IA; este histórico só fica disponível com Supabase.
         </Alert>
       ) : null}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Uso e custos de IA</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Uso e custos de IA</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Histórico de chamadas registradas para as organizações às quais você pertence. Custos são estimativas e dependem das taxas configuradas.
           </p>
         </div>
         <div className="flex items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+          <label className="flex flex-col gap-1 text-sm font-medium text-foreground">
             Período
             <select
-              className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              className="h-10 rounded-lg border border-border bg-card px-3"
               value={periodDays}
               onChange={(event) => setPeriodDays(Number(event.target.value) as 7 | 30 | 90)}
             >
@@ -137,12 +137,12 @@ export function AIUsagePage() {
       </header>
 
       {data.isPartial ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           O período contém {data.totalCount} registros, mas o painel carregou os {data.logs.length} mais recentes para manter a consulta eficiente. Os totais abaixo são parciais.
         </Alert>
       ) : null}
       {unestimated ? (
-        <Alert className="border-slate-200 bg-slate-50 text-slate-800">
+        <Alert className="border-border bg-muted text-foreground">
           {unestimated} registro(s) não têm custo estimado. Isso pode ocorrer quando a chamada falhou ou quando as taxas do modelo não estavam configuradas.
         </Alert>
       ) : null}
@@ -155,12 +155,12 @@ export function AIUsagePage() {
       </div>
 
       <section aria-labelledby="usage-by-operation">
-        <h3 id="usage-by-operation" className="mb-3 text-lg font-semibold text-slate-900">Consumo por operação</h3>
+        <h3 id="usage-by-operation" className="mb-3 text-lg font-semibold text-foreground">Consumo por operação</h3>
         <Card>
           <CardContent className="overflow-x-auto p-0">
             {data.byOperation.length ? (
               <table className="w-full min-w-[680px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+                <thead className="border-b border-border bg-muted text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th scope="col" className="px-4 py-3">Operação</th>
                     <th scope="col" className="px-4 py-3">Chamadas</th>
@@ -172,22 +172,22 @@ export function AIUsagePage() {
                 <tbody className="divide-y divide-slate-200">
                   {data.byOperation.map((summary) => (
                     <tr key={summary.operation}>
-                      <th scope="row" className="px-4 py-3 font-medium text-slate-900">
+                      <th scope="row" className="px-4 py-3 font-medium text-foreground">
                         {operationLabels[summary.operation] ?? summary.operation}
                       </th>
-                      <td className="px-4 py-3 tabular-nums text-slate-700">{summary.count}</td>
-                      <td className="px-4 py-3 tabular-nums text-slate-700">{summary.succeeded} · {summary.failed} · {summary.pending}</td>
-                      <td className="px-4 py-3 tabular-nums text-slate-700">{summary.inputTokens.toLocaleString('pt-BR')} · {summary.outputTokens.toLocaleString('pt-BR')}</td>
-                      <td className="px-4 py-3 tabular-nums text-slate-700">
+                      <td className="px-4 py-3 tabular-nums text-foreground">{summary.count}</td>
+                      <td className="px-4 py-3 tabular-nums text-foreground">{summary.succeeded} · {summary.failed} · {summary.pending}</td>
+                      <td className="px-4 py-3 tabular-nums text-foreground">{summary.inputTokens.toLocaleString('pt-BR')} · {summary.outputTokens.toLocaleString('pt-BR')}</td>
+                      <td className="px-4 py-3 tabular-nums text-foreground">
                         {formatUSD(summary.estimatedCost)}
-                        {summary.unestimatedCostCount ? <span className="ml-1 text-xs text-slate-500">({summary.unestimatedCostCount} sem estimativa)</span> : null}
+                        {summary.unestimatedCostCount ? <span className="ml-1 text-xs text-muted-foreground">({summary.unestimatedCostCount} sem estimativa)</span> : null}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <p className="p-6 text-sm leading-6 text-slate-600">
+              <p className="p-6 text-sm leading-6 text-muted-foreground">
                 Nenhuma chamada de IA foi registrada nos últimos {data.periodDays} dias.
               </p>
             )}
@@ -197,18 +197,18 @@ export function AIUsagePage() {
 
       <section aria-labelledby="usage-history-title">
         <div className="mb-3 flex items-center gap-2">
-          <Activity aria-hidden="true" className="h-5 w-5 text-slate-600" />
-          <h3 id="usage-history-title" className="text-lg font-semibold text-slate-900">Histórico recente</h3>
+          <Activity aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+          <h3 id="usage-history-title" className="text-lg font-semibold text-foreground">Histórico recente</h3>
         </div>
         {data.logs.length ? (
-          <ul className="divide-y divide-slate-200 border-y border-slate-200">
+          <ul className="divide-y divide-slate-200 border-y border-border">
             {data.logs.slice(0, 100).map((log) => (
               <li key={log.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-900">{operationLabels[log.analysis_type] ?? log.analysis_type}</p>
-                  <p className="mt-1 text-xs text-slate-600">{formatDate(log.created_at)} · {log.model}</p>
+                  <p className="text-sm font-medium text-foreground">{operationLabels[log.analysis_type] ?? log.analysis_type}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{formatDate(log.created_at)} · {log.model}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <Badge variant={log.status === 'succeeded' ? 'success' : log.status === 'failed' ? 'danger' : 'secondary'}>
                     {statusLabels[log.status]}
                   </Badge>
@@ -223,13 +223,13 @@ export function AIUsagePage() {
             ))}
           </ul>
         ) : (
-          <p className="border-y border-slate-200 py-4 text-sm leading-6 text-slate-600">O histórico aparecerá aqui após uma chamada de IA ser solicitada.</p>
+          <p className="border-y border-border py-4 text-sm leading-6 text-muted-foreground">O histórico aparecerá aqui após uma chamada de IA ser solicitada.</p>
         )}
         {data.logs.length > 100 ? (
-          <p className="mt-2 text-xs text-slate-500">Mostrando as 100 chamadas mais recentes do período.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Mostrando as 100 chamadas mais recentes do período.</p>
         ) : null}
       </section>
-      <p className="text-xs leading-5 text-slate-500">
+      <p className="text-xs leading-5 text-muted-foreground">
         Valores estimados não são cobrança da OpenAI nem teto de gasto. Consulte o faturamento do provedor para os valores finais.
       </p>
     </div>
@@ -240,9 +240,9 @@ function Metric({ label, value, detail }: { label: string; value: string; detail
   return (
     <Card>
       <CardContent className="p-4">
-        <p className="text-xs font-medium text-slate-600">{label}</p>
-        <p className="mt-2 break-words text-xl font-semibold tabular-nums text-slate-900">{value}</p>
-        {detail ? <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p> : null}
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-2 break-words text-xl font-semibold tabular-nums text-foreground">{value}</p>
+        {detail ? <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p> : null}
       </CardContent>
     </Card>
   )

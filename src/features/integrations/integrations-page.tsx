@@ -16,8 +16,8 @@ export function IntegrationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-600">Integrações</p>
-        <h2 className="text-3xl font-semibold text-slate-900">Conectores da plataforma</h2>
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Integrações</p>
+        <h2 className="text-3xl font-semibold text-foreground">Conectores da plataforma</h2>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -25,7 +25,7 @@ export function IntegrationsPage() {
           <Card key={name}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-foreground">
                   <Icon className="h-5 w-5" />
                 </div>
                 <Badge variant={enabled ? 'success' : 'secondary'}>{enabled ? 'Ativo' : 'Pendente'}</Badge>
@@ -34,7 +34,7 @@ export function IntegrationsPage() {
               <CardDescription>{status}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-500">Arquitetura preparada para conexão segura quando a organização estiver pronta para operar em ambiente de produção.</p>
+              <p className="text-sm text-muted-foreground">Arquitetura preparada para conexão segura quando a organização estiver pronta para operar em ambiente de produção.</p>
             </CardContent>
           </Card>
         ))}

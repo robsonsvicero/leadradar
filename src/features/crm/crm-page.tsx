@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Input } from '../../components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Skeleton } from '../../components/ui/skeleton'
-import { getPipelineWorkspace, updateLeadOwner, updateLeadPipelineStage, type PipelineOutcome } from '../../services/crm/pipelineService'
+import { getPipelineStageColor, getPipelineWorkspace, updateLeadOwner, updateLeadPipelineStage, type PipelineOutcome } from '../../services/crm/pipelineService'
 import type { Lead, PipelineStage } from '../../types'
 
 const unassignedFilter = '__unassigned'
@@ -51,7 +51,7 @@ export function CRMPage() {
   if (workspace.isLoading) return <Skeleton className="h-[32rem] w-full rounded-xl" />
   if (workspace.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -70,13 +70,13 @@ export function CRMPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Pipeline comercial</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Pipeline comercial</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Acompanhe cada oportunidade, seu próximo passo e quem está responsável por avançá-la.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-foreground">
             <Users aria-hidden="true" className="h-4 w-4 shrink-0" />
             <span className="sr-only">Filtrar por responsável</span>
             <Select value={ownerFilter} onValueChange={setOwnerFilter}>
@@ -101,24 +101,24 @@ export function CRMPage() {
       </header>
 
       {failedMutation ? (
-        <Alert className="border-red-200 bg-red-50 text-red-900">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           <p className="font-semibold">A alteração não foi salva.</p>
           <p className="mt-1">{failedMutation.message}</p>
         </Alert>
       ) : null}
 
       {data?.isPartial ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Exibindo os {leads.length} leads mais recentes de {data.totalLeads}. Os demais ainda não estão carregados neste quadro; a paginação será adicionada em uma próxima etapa.
         </Alert>
       ) : null}
-      <p className="text-xs leading-5 text-slate-500">
+      <p className="text-xs leading-5 text-muted-foreground">
         As probabilidades são estimativas configuráveis da etapa, não uma previsão financeira nem garantia de venda.
       </p>
 
       {!stages.length ? (
         <Card>
-          <CardContent className="p-6 text-sm leading-6 text-slate-700">
+          <CardContent className="p-6 text-sm leading-6 text-foreground">
             Nenhuma etapa de pipeline foi encontrada. Aplique a migration `20261004190000_crm_pipeline_operations.sql` no Supabase e atualize esta página.
           </CardContent>
         </Card>
@@ -129,21 +129,21 @@ export function CRMPage() {
               const items = filteredLeads.filter((lead) => lead.pipeline_stage_id === stage.id)
               return (
                 <section key={stage.id} aria-labelledby={`stage-${stage.id}`}>
-                  <Card className="h-full min-h-[28rem] bg-slate-50/70">
+                  <Card className="h-full min-h-[28rem] bg-muted/70">
                     <CardHeader className="pb-3">
                       <CardTitle id={`stage-${stage.id}`} className="flex items-center justify-between gap-2 text-base">
                         <span className="flex min-w-0 items-center gap-2">
-                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color }} />
+                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: getPipelineStageColor(stage) }} />
                           <span className="truncate">{stage.name}</span>
                         </span>
-                        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-700">{items.length}</span>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-foreground">{items.length}</span>
                       </CardTitle>
-                      <p className="text-xs text-slate-600">Probabilidade estimada: {stage.probability}%</p>
-                      {!stage.is_active ? <p className="text-xs font-medium text-amber-800">Etapa inativa · mantenha ou mova os leads para uma etapa ativa.</p> : null}
+                      <p className="text-xs text-muted-foreground">Probabilidade estimada: {stage.probability}%</p>
+                      {!stage.is_active ? <p className="text-xs font-medium text-warm-foreground">Etapa inativa · mantenha ou mova os leads para uma etapa ativa.</p> : null}
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {items.length === 0 ? (
-                        <p className="rounded-lg border border-dashed border-slate-300 p-3 text-sm text-slate-600">Nenhum lead nesta etapa.</p>
+                        <p className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">Nenhum lead nesta etapa.</p>
                       ) : items.map((lead) => (
                         <LeadPipelineCard
                           key={lead.id}
@@ -167,15 +167,15 @@ export function CRMPage() {
       )}
 
       {data?.totalLeads === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-          <Building2 aria-hidden="true" className="mx-auto h-8 w-8 text-slate-500" />
-          <h3 className="mt-3 font-semibold text-slate-900">Seu pipeline está vazio</h3>
-          <p className="mt-1 text-sm text-slate-600">Encontre empresas no Radar ou adicione leads à organização para começar.</p>
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+          <Building2 aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
+          <h3 className="mt-3 font-semibold text-foreground">Seu pipeline está vazio</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Encontre empresas no Radar ou adicione leads à organização para começar.</p>
         </div>
       ) : null}
 
       {data?.demoMode ? (
-        <p className="flex items-center gap-2 text-xs text-slate-600">
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <ArrowRightLeft aria-hidden="true" className="h-4 w-4" />
           Modo de demonstração: alterações ficam neste navegador e não são compartilhadas com outras pessoas.
         </p>
@@ -210,29 +210,29 @@ function LeadPipelineCard({
   const [wonReason, setWonReason] = useState(lead.won_reason ?? '')
   const currentOwner = members.find((member) => member.user_id === lead.owner_id)
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+    <article className="rounded-xl border border-border bg-card p-3 shadow-sm">
       <div className="flex items-start justify-between gap-2">
-        <Link to={`/companies/${lead.company_id}`} className="min-w-0 text-sm font-semibold text-slate-900 underline decoration-transparent underline-offset-4 hover:text-sky-800 hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">
+        <Link to={`/companies/${lead.company_id}`} className="min-w-0 text-sm font-semibold text-foreground underline decoration-transparent underline-offset-4 hover:text-primary hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {lead.company_name}
         </Link>
-        <Badge variant={lead.classification === 'hot' ? 'success' : lead.classification === 'warm' ? 'warning' : 'outline'}>
+        <Badge variant={lead.classification === 'hot' ? 'hot' : lead.classification === 'warm' ? 'warm' : 'cold'}>
           {lead.classification === 'hot' ? 'Quente' : lead.classification === 'warm' ? 'Morno' : 'Frio'}
         </Badge>
       </div>
-      <p className="mt-2 text-xs tabular-nums text-slate-600">Action Score {lead.action_score} · ICP {lead.icp_match}</p>
+      <p className="mt-2 text-xs tabular-nums text-muted-foreground">Action Score {lead.action_score} · ICP {lead.icp_match}</p>
       {lead.next_best_action ? (
-        <p className="mt-2 rounded-md bg-sky-50 px-2.5 py-2 text-xs leading-5 text-sky-950">
+        <p className="mt-2 rounded-md bg-accent/50 px-2.5 py-2 text-xs leading-5 text-primary">
           Próxima ação: {lead.next_best_action}
-          {lead.next_best_action_reason ? <span className="block text-sky-900">{lead.next_best_action_reason}</span> : null}
+          {lead.next_best_action_reason ? <span className="block text-primary">{lead.next_best_action_reason}</span> : null}
         </p>
       ) : lead.next_action ? (
-        <p className="mt-2 text-xs leading-5 text-slate-700">Próxima ação: {lead.next_action}</p>
+        <p className="mt-2 text-xs leading-5 text-foreground">Próxima ação: {lead.next_action}</p>
       ) : null}
       {lead.next_action_at ? (
-        <p className="mt-1 text-xs text-slate-600">Prazo: {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(lead.next_action_at))}</p>
+        <p className="mt-1 text-xs text-muted-foreground">Prazo: {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(lead.next_action_at))}</p>
       ) : null}
 
-      <label className="mt-3 block text-xs font-medium text-slate-700">
+      <label className="mt-3 block text-xs font-medium text-foreground">
         Mover para
         <Select value={stage.id} disabled={isUpdating} onValueChange={(stageId) => {
           const nextStage = stages.find((candidate) => candidate.id === stageId)
@@ -255,12 +255,12 @@ function LeadPipelineCard({
         </Select>
       </label>
       {pendingStage?.is_lost ? (
-        <div className="mt-3 space-y-2 rounded-lg bg-red-50 p-3">
-          <p className="text-xs font-semibold text-red-950">Encerrar como {pendingStage.name}</p>
-          <label className="block text-xs font-medium text-red-950">
+        <div className="mt-3 space-y-2 rounded-lg bg-destructive/10 p-3">
+          <p className="text-xs font-semibold text-destructive">Encerrar como {pendingStage.name}</p>
+          <label className="block text-xs font-medium text-destructive">
             Motivo da perda
             <Select value={lossReason} onValueChange={setLossReason}>
-              <SelectTrigger className="mt-1 h-9 bg-white text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="mt-1 h-9 bg-card text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__choose">Selecione um motivo</SelectItem>
                 {[
@@ -271,9 +271,9 @@ function LeadPipelineCard({
               </SelectContent>
             </Select>
           </label>
-          <label className="block text-xs font-medium text-red-950">
+          <label className="block text-xs font-medium text-destructive">
             Observações (opcional)
-            <Input className="mt-1 h-9 bg-white text-xs" maxLength={500} value={lossNotes} onChange={(event) => setLossNotes(event.target.value)} />
+            <Input className="mt-1 h-9 bg-card text-xs" maxLength={500} value={lossNotes} onChange={(event) => setLossNotes(event.target.value)} />
           </label>
           <div className="flex gap-2">
             <Button type="button" size="sm" variant="destructive" disabled={lossReason === '__choose' || isUpdating} onClick={() => {
@@ -285,15 +285,15 @@ function LeadPipelineCard({
         </div>
       ) : null}
       {pendingStage?.is_won ? (
-        <div className="mt-3 space-y-2 rounded-lg bg-emerald-50 p-3">
-          <p className="text-xs font-semibold text-emerald-950">Encerrar como {pendingStage.name}</p>
-          <label className="block text-xs font-medium text-emerald-950">
+        <div className="mt-3 space-y-2 rounded-lg bg-success/10 p-3">
+          <p className="text-xs font-semibold text-success-foreground">Encerrar como {pendingStage.name}</p>
+          <label className="block text-xs font-medium text-success-foreground">
             Serviço vendido
-            <Input className="mt-1 h-9 bg-white text-xs" maxLength={160} value={wonService} onChange={(event) => setWonService(event.target.value)} required />
+            <Input className="mt-1 h-9 bg-card text-xs" maxLength={160} value={wonService} onChange={(event) => setWonService(event.target.value)} required />
           </label>
-          <label className="block text-xs font-medium text-emerald-950">
+          <label className="block text-xs font-medium text-success-foreground">
             Motivo da vitória
-            <Input className="mt-1 h-9 bg-white text-xs" maxLength={500} value={wonReason} onChange={(event) => setWonReason(event.target.value)} required />
+            <Input className="mt-1 h-9 bg-card text-xs" maxLength={500} value={wonReason} onChange={(event) => setWonReason(event.target.value)} required />
           </label>
           <div className="flex gap-2">
             <Button type="button" size="sm" disabled={!wonService.trim() || !wonReason.trim() || isUpdating} onClick={() => {
@@ -307,7 +307,7 @@ function LeadPipelineCard({
 
       <div className="mt-3">
         {canReassign ? (
-          <label className="block text-xs font-medium text-slate-700">
+          <label className="block text-xs font-medium text-foreground">
             Responsável
             <Select
               value={lead.owner_id ?? '__unassigned'}
@@ -328,7 +328,7 @@ function LeadPipelineCard({
             </Select>
           </label>
         ) : (
-          <p className="text-xs text-slate-600">Responsável: {currentOwner?.full_name ?? (lead.owner_id ? `Membro ${lead.owner_id.slice(0, 8)}` : 'Não atribuído')}</p>
+          <p className="text-xs text-muted-foreground">Responsável: {currentOwner?.full_name ?? (lead.owner_id ? `Membro ${lead.owner_id.slice(0, 8)}` : 'Não atribuído')}</p>
         )}
       </div>
     </article>

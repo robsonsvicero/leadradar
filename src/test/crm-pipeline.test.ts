@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildPipelineStageChanges, createDefaultPipelineStages } from '../services/crm/pipelineService'
+import { buildPipelineStageChanges, createDefaultPipelineStages, getPipelineStageColor } from '../services/crm/pipelineService'
 import type { Lead, PipelineStage } from '../types'
 
 const lead = {
@@ -33,6 +33,15 @@ describe('CRM pipeline stages', () => {
     expect(stages.map((stage) => stage.position)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     expect(stages.filter((stage) => stage.is_won).map((stage) => stage.slug)).toEqual(['won'])
     expect(stages.filter((stage) => stage.is_lost).map((stage) => stage.slug)).toEqual(['lost'])
+  })
+
+  it('uses Dark Radar tokens for standard stages and keeps custom colors intact', () => {
+    const stages = createDefaultPipelineStages('org-1')
+    expect(getPipelineStageColor(stages.find((stage) => stage.slug === 'new')!)).toBe('hsl(var(--cold))')
+    expect(getPipelineStageColor(stages.find((stage) => stage.slug === 'qualified')!)).toBe('hsl(var(--chart-1))')
+    expect(getPipelineStageColor({ ...stages[1], color: '#0ea5e9' })).toBe('hsl(var(--chart-1))')
+    expect(getPipelineStageColor({ ...stages[1], color: '#123456' })).toBe('#123456')
+    expect(getPipelineStageColor({ ...stages[0], slug: 'discovery', color: '#123456' })).toBe('#123456')
     expect(new Set(stages.map((stage) => stage.id)).size).toBe(stages.length)
   })
 

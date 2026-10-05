@@ -31,7 +31,7 @@ export function ReplyAssistantPanel({ leadId }: { leadId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MessageSquareReply aria-hidden="true" className="h-5 w-5 text-sky-600" />
+          <MessageSquareReply aria-hidden="true" className="h-5 w-5 text-primary" />
           Analisar resposta recebida
         </CardTitle>
         <CardDescription>
@@ -39,14 +39,14 @@ export function ReplyAssistantPanel({ leadId }: { leadId: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Remova nomes, telefones, e-mails e outros dados pessoais antes de enviar. O texto será processado pela OpenAI, mas não será salvo no histórico do Lead Radar.
         </Alert>
-        <label className="block text-sm font-medium text-slate-700" htmlFor="received-reply">
+        <label className="block text-sm font-medium text-foreground" htmlFor="received-reply">
           Texto da resposta
           <textarea
             id="received-reply"
-            className="mt-1 min-h-32 w-full rounded-lg border border-slate-300 bg-white p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            className="mt-1 min-h-32 w-full rounded-lg border border-border bg-card p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             maxLength={5000}
             placeholder="Cole a resposta recebida após remover dados pessoais."
             value={receivedMessage}
@@ -56,10 +56,10 @@ export function ReplyAssistantPanel({ leadId }: { leadId: string }) {
           />
         </label>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-slate-700">
+          <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-foreground">
             Canal da resposta
             <select
-              className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+              className="h-10 rounded-lg border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={channel}
               onChange={(event) => setChannel(event.target.value as OutreachDraft['channel'])}
               disabled={prospectingMockMode || assistant.analyze.isPending}
@@ -79,57 +79,57 @@ export function ReplyAssistantPanel({ leadId }: { leadId: string }) {
               : 'Classificar e sugerir resposta'}
           </Button>
         </div>
-        <p id="received-reply-help" className="text-xs leading-5 text-slate-500">
+        <p id="received-reply-help" className="text-xs leading-5 text-muted-foreground">
           Mínimo de 10 caracteres. A chamada à IA ocorre somente ao clicar no botão.
         </p>
         {assistant.analyze.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800">{assistant.analyze.error.message}</Alert>
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{assistant.analyze.error.message}</Alert>
         ) : null}
         {assistant.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800">{assistant.error.message}</Alert>
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{assistant.error.message}</Alert>
         ) : null}
 
           {currentAnalysis ? (
-            <div className="space-y-4 border-t border-slate-200 pt-4" role="status" aria-live="polite">
-              <h3 className="font-semibold text-slate-900">Sugestão para revisar</h3>
+            <div className="space-y-4 border-t border-border pt-4" role="status" aria-live="polite">
+              <h3 className="font-semibold text-foreground">Sugestão para revisar</h3>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{replyCategories[currentAnalysis.category]}</Badge>
                 <Badge variant="outline">Sentimento: {replySentiments[currentAnalysis.sentiment]}</Badge>
                 <Badge variant="outline">Urgência: {replyUrgencies[currentAnalysis.urgency]}</Badge>
                 <Badge variant="outline">Confiança: {Math.round(currentAnalysis.confidence * 100)}%</Badge>
               </div>
-              <p className="text-sm leading-6 text-slate-700">{currentAnalysis.intent}</p>
-              <div className="rounded-lg bg-slate-50 p-4">
-                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-800">{currentAnalysis.suggestedReply}</p>
+              <p className="text-sm leading-6 text-foreground">{currentAnalysis.intent}</p>
+              <div className="rounded-lg bg-muted p-4">
+                <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">{currentAnalysis.suggestedReply}</p>
               </div>
-              <p className="text-sm leading-6 text-slate-600">
-                <strong className="text-slate-800">Próximo passo sugerido:</strong> {currentAnalysis.nextStep}
+              <p className="text-sm leading-6 text-muted-foreground">
+                <strong className="text-foreground">Próximo passo sugerido:</strong> {currentAnalysis.nextStep}
               </p>
-              <p className="text-xs text-slate-500">Resultado salvo sem o texto recebido; revise antes de responder.</p>
+              <p className="text-xs text-muted-foreground">Resultado salvo sem o texto recebido; revise antes de responder.</p>
           </div>
           ) : null}
 
-        {assistant.isLoading ? <p className="text-sm text-slate-500">Carregando histórico de análises…</p> : null}
+        {assistant.isLoading ? <p className="text-sm text-muted-foreground">Carregando histórico de análises…</p> : null}
         {assistant.data?.length === 0 && !currentAnalysis && !assistant.isLoading && !assistant.isError ? (
-          <p className="border-t border-slate-200 pt-4 text-sm leading-6 text-slate-600">
+          <p className="border-t border-border pt-4 text-sm leading-6 text-muted-foreground">
             Nenhuma resposta foi analisada neste lead. O histórico guarda somente a classificação e a sugestão, nunca a mensagem colada.
           </p>
         ) : null}
         {assistant.data?.length ? (
-          <section aria-labelledby="reply-history-title" className="border-t border-slate-200 pt-4">
-            <h3 id="reply-history-title" className="font-medium text-slate-900">Análises recentes</h3>
+          <section aria-labelledby="reply-history-title" className="border-t border-border pt-4">
+            <h3 id="reply-history-title" className="font-medium text-foreground">Análises recentes</h3>
             <ul className="mt-2 divide-y divide-slate-200" aria-live="polite">
               {assistant.data.map((record) => (
                 <li key={record.id} className="space-y-2 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Badge variant="secondary">{replyCategories[record.result.category]}</Badge>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted-foreground">
                       {new Date(record.created_at).toLocaleString('pt-BR')} · {record.model}
                     </span>
                   </div>
-                  <p className="text-sm leading-6 text-slate-700">{record.result.intent}</p>
-                  <p className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-700">{record.result.suggestedReply}</p>
-                  <p className="text-xs leading-5 text-slate-500">Próximo passo: {record.result.nextStep}</p>
+                  <p className="text-sm leading-6 text-foreground">{record.result.intent}</p>
+                  <p className="whitespace-pre-wrap rounded-lg bg-muted p-3 text-sm leading-6 text-foreground">{record.result.suggestedReply}</p>
+                  <p className="text-xs leading-5 text-muted-foreground">Próximo passo: {record.result.nextStep}</p>
                 </li>
               ))}
             </ul>

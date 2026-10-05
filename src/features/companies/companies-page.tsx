@@ -95,8 +95,8 @@ export function CompaniesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-600">Empresas</p>
-          <h2 className="text-3xl font-semibold text-slate-900">Base de empresas</h2>
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Empresas</p>
+          <h2 className="text-3xl font-semibold text-foreground">Base de empresas</h2>
         </div>
         <Button type="button" onClick={toggleForm}>
           {isFormOpen ? <X aria-hidden="true" className="h-4 w-4" /> : <Plus aria-hidden="true" className="h-4 w-4" />}
@@ -105,7 +105,7 @@ export function CompaniesPage() {
       </div>
 
       {companies.isError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-800" role="alert">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive" role="alert">
           {companies.error instanceof Error ? companies.error.message : 'Não foi possível carregar as empresas.'}
         </Alert>
       ) : null}
@@ -114,22 +114,22 @@ export function CompaniesPage() {
         <Card>
           <CardHeader>
             <CardTitle>Cadastrar empresa manualmente</CardTitle>
-            <p className="text-sm text-slate-600">O cadastro adiciona a empresa à base da organização selecionada, sem criar um lead automaticamente.</p>
+            <p className="text-sm text-muted-foreground">O cadastro adiciona a empresa à base da organização selecionada, sem criar um lead automaticamente.</p>
           </CardHeader>
           <CardContent>
             {organizations.isLoading ? <Skeleton className="h-11 w-full rounded-lg" /> : null}
             {organizations.isError ? (
-              <Alert className="mb-4 border-red-200 bg-red-50 text-red-800" role="alert">
+              <Alert className="mb-4 border-destructive/30 bg-destructive/10 text-destructive" role="alert">
                 {organizations.error instanceof Error ? organizations.error.message : 'Não foi possível carregar as organizações.'}
               </Alert>
             ) : null}
             {organizations.data?.length === 0 ? (
-              <Alert className="mb-4 border-amber-200 bg-amber-50 text-amber-950" role="alert">
+              <Alert className="mb-4 border-warm/30 bg-warm/10 text-warm-foreground" role="alert">
                 Sua conta ainda não pertence a uma organização. Vincule-se a uma organização para cadastrar empresas.
               </Alert>
             ) : null}
             {saveCompany.isError ? (
-              <Alert className="mb-4 border-red-200 bg-red-50 text-red-800" role="alert">
+              <Alert className="mb-4 border-destructive/30 bg-destructive/10 text-destructive" role="alert">
                 {saveCompany.error instanceof Error ? saveCompany.error.message : 'Não foi possível cadastrar a empresa.'}
               </Alert>
             ) : null}
@@ -137,12 +137,12 @@ export function CompaniesPage() {
               <form className="space-y-5" onSubmit={submit}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {organizations.data.length > 1 ? (
-                    <label className="space-y-2 text-sm font-medium text-slate-700 sm:col-span-2" htmlFor="company-organization">
+                    <label className="space-y-2 text-sm font-medium text-foreground sm:col-span-2" htmlFor="company-organization">
                       Organização
                       <select
                         id="company-organization"
                         required
-                        className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                        className="h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         value={form.organization_id}
                         onChange={(event) => setForm({ ...form, organization_id: event.target.value })}
                       >
@@ -153,49 +153,49 @@ export function CompaniesPage() {
                       </select>
                     </label>
                   ) : null}
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-name">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-name">
                     Nome da empresa *
                     <Input id="company-name" required maxLength={160} autoComplete="organization" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-category">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-category">
                     Segmento
                     <Input id="company-category" maxLength={120} placeholder="Ex.: academia" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-email">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-email">
                     E-mail
                     <Input id="company-email" type="email" maxLength={254} autoComplete="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-phone">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-phone">
                     Telefone
                     <Input id="company-phone" type="tel" maxLength={32} autoComplete="tel" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700 sm:col-span-2" htmlFor="company-website">
+                  <label className="space-y-2 text-sm font-medium text-foreground sm:col-span-2" htmlFor="company-website">
                     Website
                     <Input id="company-website" type="url" maxLength={2048} placeholder="https://exemplo.com.br" autoComplete="url" value={form.website} onChange={(event) => setForm({ ...form, website: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700 sm:col-span-2" htmlFor="company-address">
+                  <label className="space-y-2 text-sm font-medium text-foreground sm:col-span-2" htmlFor="company-address">
                     Endereço
                     <Input id="company-address" maxLength={240} autoComplete="street-address" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-city">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-city">
                     Cidade
                     <Input id="company-city" maxLength={120} autoComplete="address-level2" value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-state">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-state">
                     Estado
                     <Input id="company-state" maxLength={80} autoComplete="address-level1" value={form.state} onChange={(event) => setForm({ ...form, state: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="company-country">
+                  <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="company-country">
                     País
                     <Input id="company-country" maxLength={80} autoComplete="country-name" value={form.country} onChange={(event) => setForm({ ...form, country: event.target.value })} />
                   </label>
-                  <label className="space-y-2 text-sm font-medium text-slate-700 sm:col-span-2" htmlFor="company-description">
+                  <label className="space-y-2 text-sm font-medium text-foreground sm:col-span-2" htmlFor="company-description">
                     Observações
                     <textarea
                       id="company-description"
                       rows={3}
                       maxLength={1000}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                      className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       value={form.description}
                       onChange={(event) => setForm({ ...form, description: event.target.value })}
                     />
@@ -215,11 +215,11 @@ export function CompaniesPage() {
       ) : null}
 
       {companies.data?.length === 0 ? (
-        <Card className="border-dashed border-slate-300 bg-white">
+        <Card className="border-dashed border-border bg-card">
           <CardContent className="flex min-h-64 flex-col items-center justify-center text-center">
             <BuildingPlaceholder />
-            <h3 className="text-lg font-semibold text-slate-900">Nenhuma empresa encontrada</h3>
-            <p className="mt-2 max-w-md text-sm text-slate-500">A base ainda está vazia. Use o radar para encontrar novos clientes em potencial.</p>
+            <h3 className="text-lg font-semibold text-foreground">Nenhuma empresa encontrada</h3>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">A base ainda está vazia. Use o radar para encontrar novos clientes em potencial.</p>
           </CardContent>
         </Card>
       ) : companies.data?.length ? (
@@ -244,24 +244,24 @@ export function CompaniesPage() {
                 {companies.data.map((company) => (
                   <TableRow key={company.id}>
                     <TableCell>
-                      <Link to={`/companies/${company.id}`} className="font-semibold text-sky-700 hover:underline">
+                      <Link to={`/companies/${company.id}`} className="font-semibold text-primary hover:underline">
                         {company.name}
                       </Link>
                     </TableCell>
                     <TableCell>{company.category}</TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         {company.city}
                       </span>
                     </TableCell>
                     <TableCell>
                       {company.website ? (
-                        <a href={company.website} className="inline-flex items-center gap-1 text-sm text-sky-700 hover:underline" target="_blank" rel="noreferrer">
+                        <a href={company.website} className="inline-flex items-center gap-1 text-sm text-primary hover:underline" target="_blank" rel="noreferrer">
                           <Globe aria-hidden="true" className="h-4 w-4" />
                           {company.website}
                         </a>
-                      ) : <span className="text-sm text-slate-500">Sem website</span>}
+                      ) : <span className="text-sm text-muted-foreground">Sem website</span>}
                     </TableCell>
                     <TableCell>{company.review_count}</TableCell>
                     <TableCell>
@@ -284,7 +284,7 @@ export function CompaniesPage() {
 
 function BuildingPlaceholder() {
   return (
-    <div className="mb-4 rounded-full bg-slate-100 p-4 text-slate-400">
+    <div className="mb-4 rounded-full bg-secondary p-4 text-muted-foreground">
       <Building2Icon className="h-10 w-10" />
     </div>
   )

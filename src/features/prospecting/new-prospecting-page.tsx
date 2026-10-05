@@ -74,31 +74,31 @@ export function NewProspectingPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-sky-700">
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />
         Voltar ao dashboard
       </Link>
 
       <header>
-        <h2 className="text-3xl font-semibold text-slate-900">Nova prospecção</h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <h2 className="text-3xl font-semibold text-foreground">Nova prospecção</h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Busque empresas e profissionais em um segmento B2B e região. A prospecção não procura consumidores finais.
         </p>
       </header>
 
       {prospectingMockMode ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Modo de demonstração ativo. Os resultados serão fictícios e ficarão apenas neste navegador; nenhuma API externa será chamada.
         </Alert>
       ) : null}
 
       {organizations.isError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           {organizations.error instanceof Error ? organizations.error.message : 'Não foi possível carregar as organizações.'}
         </Alert>
       ) : null}
       {createJob.isError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           {createJob.error instanceof Error ? createJob.error.message : 'Não foi possível iniciar a prospecção.'}
         </Alert>
       ) : null}
@@ -114,10 +114,10 @@ export function NewProspectingPage() {
           <form className="space-y-5" onSubmit={(event) => void onSubmit(event)}>
             {organizations.data && organizations.data.length > 1 ? (
               <div className="space-y-2">
-                <label htmlFor="organizationId" className="text-sm font-medium text-slate-700">Organização</label>
+                <label htmlFor="organizationId" className="text-sm font-medium text-foreground">Organização</label>
                 <select
                   id="organizationId"
-                  className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                  className="h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   {...form.register('organizationId')}
                 >
                   <option value="">Selecione uma organização</option>
@@ -125,46 +125,46 @@ export function NewProspectingPage() {
                     <option key={organization.id} value={organization.id}>{organization.name}</option>
                   ))}
                 </select>
-                {form.formState.errors.organizationId ? <p className="text-sm text-red-700">{form.formState.errors.organizationId.message}</p> : null}
+                {form.formState.errors.organizationId ? <p className="text-sm text-destructive">{form.formState.errors.organizationId.message}</p> : null}
               </div>
             ) : null}
 
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="segment" className="text-sm font-medium text-slate-700">Segmento</label>
+                <label htmlFor="segment" className="text-sm font-medium text-foreground">Segmento</label>
                 <Input id="segment" placeholder="Ex.: academias, clínicas ou empresas" {...form.register('segment')} />
-                <p className="text-xs text-slate-500">Informe o comprador B2B que deseja encontrar, não consumidores finais.</p>
-                {form.formState.errors.segment ? <p className="text-sm text-red-700">{form.formState.errors.segment.message}</p> : null}
+                <p className="text-xs text-muted-foreground">Informe o comprador B2B que deseja encontrar, não consumidores finais.</p>
+                {form.formState.errors.segment ? <p className="text-sm text-destructive">{form.formState.errors.segment.message}</p> : null}
               </div>
               <div className="space-y-2">
-                <label htmlFor="location" className="text-sm font-medium text-slate-700">Localização</label>
+                <label htmlFor="location" className="text-sm font-medium text-foreground">Localização</label>
                 <Input id="location" placeholder="Ex.: São Paulo, SP" {...form.register('location')} />
-                {form.formState.errors.location ? <p className="text-sm text-red-700">{form.formState.errors.location.message}</p> : null}
+                {form.formState.errors.location ? <p className="text-sm text-destructive">{form.formState.errors.location.message}</p> : null}
               </div>
             </div>
 
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="targetQuantity" className="text-sm font-medium text-slate-700">Quantidade máxima de empresas</label>
+                <label htmlFor="targetQuantity" className="text-sm font-medium text-foreground">Quantidade máxima de empresas</label>
                 <Input id="targetQuantity" type="number" min={prospectingConfig.minCompaniesPerJob} max={prospectingConfig.maxCompaniesPerJob} {...form.register('targetQuantity')} />
-                <p className="text-xs text-slate-500">De {prospectingConfig.minCompaniesPerJob} a {prospectingConfig.maxCompaniesPerJob}. A quantidade final depende dos resultados disponíveis na fonte.</p>
-                {form.formState.errors.targetQuantity ? <p className="text-sm text-red-700">{form.formState.errors.targetQuantity.message}</p> : null}
+                <p className="text-xs text-muted-foreground">De {prospectingConfig.minCompaniesPerJob} a {prospectingConfig.maxCompaniesPerJob}. A quantidade final depende dos resultados disponíveis na fonte.</p>
+                {form.formState.errors.targetQuantity ? <p className="text-sm text-destructive">{form.formState.errors.targetQuantity.message}</p> : null}
               </div>
               <div className="space-y-2">
-                <label htmlFor="keywords" className="text-sm font-medium text-slate-700">Palavras-chave <span className="font-normal text-slate-500">(opcional)</span></label>
+                <label htmlFor="keywords" className="text-sm font-medium text-foreground">Palavras-chave <span className="font-normal text-muted-foreground">(opcional)</span></label>
                 <textarea
                   id="keywords"
                   rows={3}
                   placeholder={'Implante dentário\nOrtodontia'}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                  className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   {...form.register('keywords')}
                 />
-                {form.formState.errors.keywords ? <p className="text-sm text-red-700">{form.formState.errors.keywords.message}</p> : null}
+                {form.formState.errors.keywords ? <p className="text-sm text-destructive">{form.formState.errors.keywords.message}</p> : null}
               </div>
             </div>
 
             {!prospectingMockMode ? (
-              <p className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <p className="rounded-lg bg-muted px-4 py-3 text-sm text-muted-foreground">
                 A prospecção real pode consumir chamadas do Google Places e PageSpeed. Os secrets ficam nas Edge Functions do Supabase, nunca no navegador.
               </p>
             ) : null}

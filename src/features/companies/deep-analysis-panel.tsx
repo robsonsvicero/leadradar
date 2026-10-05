@@ -32,37 +32,37 @@ export function DeepAnalysisPanel({ leadId, hasBaseAnalysis }: { leadId: string;
           {deepAnalysis.analyze.isPending ? 'Analisando evidências…' : result ? 'Atualizar análise aprofundada' : 'Gerar análise aprofundada'}
         </Button>
         {!hasBaseAnalysis && !prospectingMockMode ? (
-          <p className="text-sm leading-6 text-slate-600">Gere primeiro a inteligência comercial deste lead. A análise aprofundada só começa quando solicitada.</p>
+          <p className="text-sm leading-6 text-muted-foreground">Gere primeiro a inteligência comercial deste lead. A análise aprofundada só começa quando solicitada.</p>
         ) : null}
         {deepAnalysis.analyze.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800">{deepAnalysis.analyze.error.message}</Alert>
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{deepAnalysis.analyze.error.message}</Alert>
         ) : null}
         {deepAnalysis.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800">{deepAnalysis.error.message}</Alert>
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{deepAnalysis.error.message}</Alert>
         ) : null}
-        {deepAnalysis.isLoading ? <p className="text-sm text-slate-500">Carregando análise salva…</p> : null}
+        {deepAnalysis.isLoading ? <p className="text-sm text-muted-foreground">Carregando análise salva…</p> : null}
         {result ? (
-          <div className="space-y-5 border-t border-slate-200 pt-4">
+          <div className="space-y-5 border-t border-border pt-4">
             <div>
-              <p className="text-sm leading-6 text-slate-700">{result.executiveSummary}</p>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="text-sm leading-6 text-foreground">{result.executiveSummary}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
                 Modelo {deepAnalysis.data?.model} · Confiança {Math.round(result.confidence * 100)}% · {new Date(deepAnalysis.data?.created_at ?? '').toLocaleString('pt-BR')}
               </p>
             </div>
 
             {result.opportunities.length ? (
               <section aria-labelledby="deep-opportunities-title">
-                <h3 id="deep-opportunities-title" className="font-semibold text-slate-900">Oportunidades a validar</h3>
+                <h3 id="deep-opportunities-title" className="font-semibold text-foreground">Oportunidades a validar</h3>
                 <ul className="mt-2 divide-y divide-slate-200">
                   {result.opportunities.map((item) => (
                     <li key={`${item.title}-${item.evidenceRefs.join('-')}`} className="space-y-1 py-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-slate-900">{item.title}</span>
+                        <span className="font-medium text-foreground">{item.title}</span>
                         <Badge variant="outline">Prioridade {priorityLabels[item.priority]}</Badge>
                       </div>
-                      <p className="text-sm leading-6 text-slate-700">{item.observedEvidence}</p>
-                      <p className="text-sm leading-6 text-slate-600">{item.businessImplication}</p>
-                      <p className="text-sm leading-6 text-slate-600"><strong>Ação sugerida:</strong> {item.recommendedAction}</p>
+                      <p className="text-sm leading-6 text-foreground">{item.observedEvidence}</p>
+                      <p className="text-sm leading-6 text-muted-foreground">{item.businessImplication}</p>
+                      <p className="text-sm leading-6 text-muted-foreground"><strong>Ação sugerida:</strong> {item.recommendedAction}</p>
                     </li>
                   ))}
                 </ul>
@@ -71,8 +71,8 @@ export function DeepAnalysisPanel({ leadId, hasBaseAnalysis }: { leadId: string;
 
             {result.strengths.length ? (
               <section aria-labelledby="deep-strengths-title">
-                <h3 id="deep-strengths-title" className="font-semibold text-slate-900">Pontos fortes observados</h3>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">
+                <h3 id="deep-strengths-title" className="font-semibold text-foreground">Pontos fortes observados</h3>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-foreground">
                   {result.strengths.map((item) => <li key={`${item.title}-${item.evidenceRefs.join('-')}`}><strong>{item.title}:</strong> {item.detail}</li>)}
                 </ul>
               </section>
@@ -80,8 +80,8 @@ export function DeepAnalysisPanel({ leadId, hasBaseAnalysis }: { leadId: string;
 
             {result.risks.length ? (
               <section aria-labelledby="deep-risks-title">
-                <h3 id="deep-risks-title" className="font-semibold text-slate-900">Riscos e limitações</h3>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">
+                <h3 id="deep-risks-title" className="font-semibold text-foreground">Riscos e limitações</h3>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-foreground">
                   {result.risks.map((item) => <li key={`${item.title}-${item.evidenceRefs.join('-')}`}><strong>{item.title} ({priorityLabels[item.severity]}):</strong> {item.detail}</li>)}
                 </ul>
               </section>
@@ -89,15 +89,15 @@ export function DeepAnalysisPanel({ leadId, hasBaseAnalysis }: { leadId: string;
 
             {result.validationQuestions.length ? (
               <section aria-labelledby="deep-questions-title">
-                <h3 id="deep-questions-title" className="font-semibold text-slate-900">Perguntas para a conversa</h3>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">
+                <h3 id="deep-questions-title" className="font-semibold text-foreground">Perguntas para a conversa</h3>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-foreground">
                   {result.validationQuestions.map((question) => <li key={question}>{question}</li>)}
                 </ul>
               </section>
             ) : null}
           </div>
         ) : !deepAnalysis.isLoading && !deepAnalysis.isError ? (
-          <p className="border-t border-slate-200 pt-4 text-sm leading-6 text-slate-600">
+          <p className="border-t border-border pt-4 text-sm leading-6 text-muted-foreground">
             A análise detalhada ainda não foi solicitada. A chamada de IA pode gerar custo e não cria tarefas ou mensagens.
           </p>
         ) : null}

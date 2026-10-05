@@ -30,7 +30,7 @@ function ProtectedLayout() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-700">
+      <div className="flex min-h-screen items-center justify-center bg-secondary text-foreground">
         Carregando área de trabalho...
       </div>
     )
@@ -44,7 +44,7 @@ function ProtectedLayout() {
     const rejected = user.accessStatus === 'rejected'
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
+      <div className="flex min-h-screen items-center justify-center bg-secondary px-4 py-12">
         <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle>{rejected ? 'Acesso não aprovado' : 'Aguardando aprovação'}</CardTitle>
@@ -76,7 +76,7 @@ export function AppRoutes() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-700">
+      <div className="flex min-h-screen items-center justify-center bg-secondary text-foreground">
         Preparando aplicação...
       </div>
     )
@@ -84,7 +84,7 @@ export function AppRoutes() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center text-sm text-slate-600">Carregando página...</div>}>
+      <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center text-sm text-muted-foreground">Carregando página...</div>}>
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <AuthPage mode="login" />} />
           <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <AuthPage mode="register" />} />

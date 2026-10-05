@@ -189,7 +189,7 @@ export function TasksPage() {
       ? tasksQuery.error.message
       : optionsQuery.error?.message ?? 'Erro desconhecido ao carregar os dados.'
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -211,8 +211,8 @@ export function TasksPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Meu dia</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Priorize as tarefas por urgência e prazo; registre o próximo passo sem perder o vínculo com o lead.</p>
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Meu dia</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Priorize as tarefas por urgência e prazo; registre o próximo passo sem perder o vínculo com o lead.</p>
         </div>
         <Button type="button" variant="outline" onClick={() => {
           void tasksQuery.refetch()
@@ -223,7 +223,7 @@ export function TasksPage() {
       </header>
 
       {organizations.length === 0 ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Sua conta ainda não pertence a uma organização. Peça ao administrador para adicioná-la antes de criar tarefas.
         </Alert>
       ) : null}
@@ -232,11 +232,11 @@ export function TasksPage() {
         <CardHeader><CardTitle>Nova tarefa</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleCreateTask} className="grid gap-4 md:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Título
               <Input className="mt-1" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: ligar para confirmar o interesse" maxLength={160} required />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Organização
               <Select value={selectedOrganizationId} onValueChange={(value) => {
                 setOrganizationId(value)
@@ -249,7 +249,7 @@ export function TasksPage() {
                 </SelectContent>
               </Select>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Lead (opcional)
               <Select value={leadId} onValueChange={setLeadId}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Sem lead associado" /></SelectTrigger>
@@ -259,11 +259,11 @@ export function TasksPage() {
                 </SelectContent>
               </Select>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Descrição
               <Input className="mt-1" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Contexto ou resultado esperado" maxLength={1000} />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Tipo
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -272,14 +272,14 @@ export function TasksPage() {
                 </SelectContent>
               </Select>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Prioridade
               <Select value={priority} onValueChange={(value) => setPriority(value as TaskItem['priority'])}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>{priorities.map((level) => <SelectItem key={level} value={level}>{priorityLabels[level]}</SelectItem>)}</SelectContent>
               </Select>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Responsável
               <Select
                 value={assignedTo === undefined ? options?.currentUserId ?? '__unassigned' : assignedTo ?? '__unassigned'}
@@ -292,7 +292,7 @@ export function TasksPage() {
                 </SelectContent>
               </Select>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Prazo (opcional)
               <Input className="mt-1" type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
             </label>
@@ -303,7 +303,7 @@ export function TasksPage() {
               </Button>
             </div>
           </form>
-          {createMutation.isError ? <p role="alert" className="mt-3 text-sm text-red-700">{createMutation.error.message}</p> : null}
+          {createMutation.isError ? <p role="alert" className="mt-3 text-sm text-destructive">{createMutation.error.message}</p> : null}
         </CardContent>
       </Card>
 
@@ -324,7 +324,7 @@ export function TasksPage() {
           ))}
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-foreground">
             Prioridade
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -334,7 +334,7 @@ export function TasksPage() {
               </SelectContent>
             </Select>
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-foreground">
             Tipo
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -344,7 +344,7 @@ export function TasksPage() {
               </SelectContent>
             </Select>
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-foreground">
             Responsável
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -355,7 +355,7 @@ export function TasksPage() {
               </SelectContent>
             </Select>
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-foreground">
             Lead
             <Select value={leadFilter} onValueChange={setLeadFilter}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -369,14 +369,14 @@ export function TasksPage() {
         </div>
       </section>
 
-      {updateMutation.isError ? <Alert className="border-red-200 bg-red-50 text-red-900">{updateMutation.error.message}</Alert> : null}
+      {updateMutation.isError ? <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{updateMutation.error.message}</Alert> : null}
       <div className="space-y-3">
         {visibleTasks.length === 0 ? (
-          <Card className="border-dashed border-slate-300 bg-white">
+          <Card className="border-dashed border-border bg-card">
             <CardContent className="flex min-h-40 flex-col items-center justify-center text-center">
-              <CalendarClock aria-hidden="true" className="mb-3 h-9 w-9 text-slate-500" />
-              <h3 className="font-semibold text-slate-900">{tasks.length ? 'Nenhuma tarefa nesta visão' : 'Nenhuma tarefa cadastrada'}</h3>
-              <p className="mt-1 max-w-md text-sm leading-6 text-slate-600">
+              <CalendarClock aria-hidden="true" className="mb-3 h-9 w-9 text-muted-foreground" />
+              <h3 className="font-semibold text-foreground">{tasks.length ? 'Nenhuma tarefa nesta visão' : 'Nenhuma tarefa cadastrada'}</h3>
+              <p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground">
                 {tasks.length ? 'Altere a visão ou os filtros para encontrar outras tarefas.' : 'Crie uma tarefa e vincule-a a uma organização para iniciar seu fluxo comercial.'}
               </p>
             </CardContent>
@@ -386,21 +386,21 @@ export function TasksPage() {
             <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-semibold text-slate-900">{task.title}</h3>
+                  <h3 className="font-semibold text-foreground">{task.title}</h3>
                   <Badge variant={task.priority === 'urgent' || task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'secondary'}>{priorityLabels[task.priority]}</Badge>
                   <Badge variant="outline">{typeLabels[task.type] ?? task.type}</Badge>
                   {task.status === 'in_progress' ? <Badge variant="secondary">{taskStatusLabels[task.status]}</Badge> : null}
                 </div>
-                {task.description ? <p className="mt-1 text-sm leading-6 text-slate-600">{task.description}</p> : null}
+                {task.description ? <p className="mt-1 text-sm leading-6 text-muted-foreground">{task.description}</p> : null}
                 {task.lead_id ? (
-                  <p className="mt-1 text-xs text-slate-600">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Lead: {leadById.get(task.lead_id)?.company_id
-                      ? <Link to={`/companies/${leadById.get(task.lead_id)?.company_id}`} className="font-medium text-sky-800 underline underline-offset-2">{leadNameById.get(task.lead_id) ?? 'Abrir lead'}</Link>
+                      ? <Link to={`/companies/${leadById.get(task.lead_id)?.company_id}`} className="font-medium text-primary underline underline-offset-2">{leadNameById.get(task.lead_id) ?? 'Abrir lead'}</Link>
                       : leadNameById.get(task.lead_id) ?? 'Lead não carregado'}
                   </p>
                 ) : null}
-                <p className="mt-1 text-xs text-slate-600">Responsável: {task.assigned_to ? assigneeNameById.get(task.assigned_to) ?? 'Membro da organização' : 'Não atribuído'}</p>
-                <p className={`mt-2 text-xs ${isOverdue(task) ? 'font-semibold text-red-700' : 'text-slate-600'}`}>
+                <p className="mt-1 text-xs text-muted-foreground">Responsável: {task.assigned_to ? assigneeNameById.get(task.assigned_to) ?? 'Membro da organização' : 'Não atribuído'}</p>
+                <p className={`mt-2 text-xs ${isOverdue(task) ? 'font-semibold text-destructive' : 'text-muted-foreground'}`}>
                   {isOverdue(task) ? 'Atrasada · ' : ''}{formatDue(task.due_at)}
                 </p>
               </div>
@@ -419,7 +419,7 @@ export function TasksPage() {
           </Card>
         ))}
       </div>
-      {tasks.length >= 500 ? <p className="text-xs text-slate-600">Mostrando até 500 tarefas mais próximas do prazo. Use filtros adicionais para organizar o trabalho.</p> : null}
+      {tasks.length >= 500 ? <p className="text-xs text-muted-foreground">Mostrando até 500 tarefas mais próximas do prazo. Use filtros adicionais para organizar o trabalho.</p> : null}
     </div>
   )
 }

@@ -136,7 +136,7 @@ function CadenceEditor({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="text-sm font-medium text-slate-800">
+            <label className="text-sm font-medium text-foreground">
               Organização
               <Select value={selectedOrganizationId} onValueChange={onOrganizationChange} disabled={organizations.length === 0}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione a organização" /></SelectTrigger>
@@ -147,14 +147,14 @@ function CadenceEditor({
                 </SelectContent>
               </Select>
             </label>
-            <label className="text-sm font-medium text-slate-800">
+            <label className="text-sm font-medium text-foreground">
               Nome da cadência
               <Input className="mt-1" value={name} onChange={(event) => setName(event.target.value)} maxLength={120} placeholder="Ex.: Primeiro contato com comércio local" required />
             </label>
-            <label className="text-sm font-medium text-slate-800 md:col-span-2">
+            <label className="text-sm font-medium text-foreground md:col-span-2">
               Descrição (opcional)
               <textarea
-                className="mt-1 min-h-16 w-full rounded-md border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                className="mt-1 min-h-16 w-full rounded-md border border-border bg-card p-3 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 maxLength={2000}
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
@@ -165,41 +165,41 @@ function CadenceEditor({
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-slate-900">Etapas e tarefas</h3>
+              <h3 className="text-sm font-semibold text-foreground">Etapas e tarefas</h3>
               <Button type="button" variant="outline" size="sm" disabled={steps.length >= 20} onClick={() => setSteps((current) => [...current, initialDraftStep()])}>
                 <Plus aria-hidden="true" className="h-4 w-4" />Adicionar etapa
               </Button>
             </div>
             {steps.map((step, index) => (
-              <fieldset key={step.key} className="space-y-3 rounded-lg border border-slate-200 p-3">
-                <legend className="px-1 text-sm font-semibold text-slate-800">Etapa {index + 1}</legend>
+              <fieldset key={step.key} className="space-y-3 rounded-lg border border-border p-3">
+                <legend className="px-1 text-sm font-semibold text-foreground">Etapa {index + 1}</legend>
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_10rem_10rem_8rem_auto]">
-                  <label className="text-sm font-medium text-slate-800">
+                  <label className="text-sm font-medium text-foreground">
                     Título da tarefa
                     <Input className="mt-1" value={step.title} onChange={(event) => updateStep(step.key, 'title', event.target.value)} maxLength={120} placeholder="Ex.: Enviar apresentação personalizada" required />
                   </label>
-                  <label className="text-sm font-medium text-slate-800">
+                  <label className="text-sm font-medium text-foreground">
                     Tipo de tarefa
                     <Select value={step.taskType} onValueChange={(value) => updateStep(step.key, 'taskType', value)}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>{taskTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
                     </Select>
                   </label>
-                  <label className="text-sm font-medium text-slate-800">
+                  <label className="text-sm font-medium text-foreground">
                     Prioridade
                     <Select value={step.priority} onValueChange={(value) => updateStep(step.key, 'priority', value)}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>{priorityOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
                     </Select>
                   </label>
-                  <label className="text-sm font-medium text-slate-800">
+                  <label className="text-sm font-medium text-foreground">
                     Dias após inscrição
                     <Input className="mt-1" type="number" min={0} max={365} step={1} value={step.delayDays} onChange={(event) => updateStep(step.key, 'delayDays', event.target.value)} required />
                   </label>
                   <Button type="button" variant="ghost" size="icon" className="self-end" aria-label={`Remover etapa ${index + 1}`} disabled={steps.length <= 1} onClick={() => setSteps((current) => current.filter((item) => item.key !== step.key))}>
                     <X aria-hidden="true" className="h-4 w-4" />
                   </Button>
-                  <label className="text-sm font-medium text-slate-800 md:col-span-2 xl:col-span-4">
+                  <label className="text-sm font-medium text-foreground md:col-span-2 xl:col-span-4">
                     Instrução (opcional)
                     <Input className="mt-1" value={step.description} onChange={(event) => updateStep(step.key, 'description', event.target.value)} maxLength={1000} placeholder="Contexto para a tarefa; não é uma mensagem enviada ao lead." />
                   </label>
@@ -208,9 +208,9 @@ function CadenceEditor({
             ))}
           </div>
 
-          {validationError ? <p role="alert" className="text-sm text-red-700">{validationError}</p> : null}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-            <p className="max-w-xl text-xs leading-5 text-slate-600">
+          {validationError ? <p role="alert" className="text-sm text-destructive">{validationError}</p> : null}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <p className="max-w-xl text-xs leading-5 text-muted-foreground">
               Os intervalos contam a partir da inscrição. Salvar cria apenas o modelo; as tarefas aparecem quando um lead for inscrito.
             </p>
             <Button type="submit" disabled={!selectedOrganizationId || isPending}>
@@ -236,7 +236,7 @@ function EnrollmentList({
 }) {
   if (!enrollments.length) {
     return (
-      <p className="rounded-lg border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">
+      <p className="rounded-lg border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
         Nenhum lead inscrito nesta cadência. Ao inscrever alguém, as tarefas datadas serão adicionadas ao centro de tarefas.
       </p>
     )
@@ -247,15 +247,15 @@ function EnrollmentList({
       {enrollments.map((enrollment) => {
         const completedCount = enrollment.tasks.filter((task) => isCompleted(task.status)).length
         return (
-          <article key={enrollment.id} className="rounded-xl border border-slate-200 bg-white p-4">
+          <article key={enrollment.id} className="rounded-xl border border-border bg-card p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h4 className="font-semibold text-slate-900">
+                <h4 className="font-semibold text-foreground">
                   {enrollment.lead_company_id
-                    ? <Link className="hover:text-sky-800 hover:underline" to={`/companies/${enrollment.lead_company_id}`}>{enrollment.lead_name}</Link>
+                    ? <Link className="hover:text-primary hover:underline" to={`/companies/${enrollment.lead_company_id}`}>{enrollment.lead_name}</Link>
                     : enrollment.lead_name}
                 </h4>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {completedCount} de {cadence.steps.length} tarefas concluídas · inscrição em {formatDue(enrollment.enrolled_at)}
                 </p>
               </div>
@@ -270,23 +270,23 @@ function EnrollmentList({
                 ) : null}
               </div>
             </div>
-            <ol className="mt-4 divide-y divide-slate-100 border-t border-slate-100">
+            <ol className="mt-4 divide-y divide-slate-100 border-t border-border">
               {cadence.steps.map((step, index) => {
                 const task = enrollment.tasks.find((item) => item.cadence_step_id === step.id)
                 const done = Boolean(task && isCompleted(task.status))
                 return (
                   <li key={step.id} className="grid gap-2 py-3 sm:grid-cols-[2rem_minmax(0,1fr)_auto] sm:items-center">
-                    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
+                    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-success/10 text-success-foreground' : 'bg-secondary text-foreground'}`}>
                       {done ? <CheckCircle2 aria-hidden="true" className="h-4 w-4" /> : index + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{step.title}</p>
-                      <p className="text-xs text-slate-600">
+                      <p className="text-sm font-medium text-foreground">{step.title}</p>
+                      <p className="text-xs text-muted-foreground">
                         {task?.status === 'cancelled' ? 'Tarefa cancelada' : task ? `Prazo: ${formatDue(task.due_at)}` : 'Tarefa ainda não gerada'}
                       </p>
                     </div>
                     {task && task.status !== 'cancelled' ? (
-                      <Link to="/tasks" className="inline-flex items-center gap-1 text-sm font-medium text-sky-800 hover:underline">
+                      <Link to="/tasks" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                         Ver tarefa <ArrowRight aria-hidden="true" className="h-4 w-4" />
                       </Link>
                     ) : null}
@@ -369,7 +369,7 @@ export function CadencesPage() {
   if (workspace.isLoading) return <Skeleton className="h-[36rem] w-full rounded-xl" />
   if (workspace.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -388,8 +388,8 @@ export function CadencesPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Cadências comerciais</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Cadências comerciais</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Organize os próximos passos e prazos por lead. Cada etapa vira uma tarefa para execução e revisão humanas.
           </p>
         </div>
@@ -399,17 +399,17 @@ export function CadencesPage() {
         </Button>
       </header>
 
-      <Alert className="border-sky-200 bg-sky-50 text-sky-950">
+      <Alert className="border-primary/30 bg-accent/50 text-primary">
         Inscrever um lead cria tarefas agendadas, mas não envia mensagens, não agenda contatos e não executa tarefas automaticamente. Os intervalos contam desde a inscrição.
       </Alert>
 
       {organizations.length === 0 ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Sua conta ainda não pertence a uma organização. Peça ao administrador para adicioná-la antes de criar cadências.
         </Alert>
       ) : null}
       {mutationError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-900">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           <p className="font-semibold">A alteração não foi salva.</p>
           <p className="mt-1">{mutationError.message}</p>
         </Alert>
@@ -418,7 +418,7 @@ export function CadencesPage() {
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(15rem,0.72fr)_minmax(0,2fr)]">
         <aside aria-label="Cadências da organização" className="space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-slate-900">Planos</h3>
+            <h3 className="font-semibold text-foreground">Planos</h3>
             <Select value={selectedOrganizationId} onValueChange={(value) => {
               setOrganizationId(value)
               setSelectedCadenceId('')
@@ -446,13 +446,13 @@ export function CadencesPage() {
                     setLeadId('')
                     setShowCreateForm(false)
                   }}
-                  className={`w-full rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 ${active ? 'border-sky-400 bg-sky-50 text-slate-950' : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300'}`}
+                  className={`w-full rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active ? 'border-primary/50 bg-accent/50 text-foreground' : 'border-border bg-card text-foreground hover:border-border'}`}
                 >
                   <span className="flex items-start justify-between gap-2">
                     <span className="font-medium">{cadence.name}</span>
                     {cadence.status === 'archived' ? <Badge variant="outline">Arquivada</Badge> : null}
                   </span>
-                  <span className="mt-1 block text-xs text-slate-600">{cadence.steps.length} etapas · {enrollmentCount} inscrições ativas</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{cadence.steps.length} etapas · {enrollmentCount} inscrições ativas</span>
                 </button>
               )
             })}
@@ -484,7 +484,7 @@ export function CadencesPage() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <CardTitle>{selectedCadence.name}</CardTitle>
-                      {selectedCadence.description ? <p className="mt-2 text-sm leading-6 text-slate-600">{selectedCadence.description}</p> : null}
+                      {selectedCadence.description ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectedCadence.description}</p> : null}
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant={selectedCadence.status === 'active' ? 'success' : 'outline'}>{selectedCadence.status === 'active' ? 'Ativa' : 'Arquivada'}</Badge>
@@ -503,17 +503,17 @@ export function CadencesPage() {
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {selectedCadence.steps.map((step, index) => (
-                      <div key={step.id} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3 rounded-lg border border-slate-200 p-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700">
+                      <div key={step.id} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3 rounded-lg border border-border p-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
                           {index + 1}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-medium text-slate-900">{step.title}</h4>
-                          <p className="mt-1 text-xs text-slate-600">
+                          <h4 className="font-medium text-foreground">{step.title}</h4>
+                          <p className="mt-1 text-xs text-muted-foreground">
                             {step.delay_days === 0 ? 'No dia da inscrição' : `${step.delay_days} ${step.delay_days === 1 ? 'dia' : 'dias'} após a inscrição`}
                             {' · '}{taskTypeOptions.find((type) => type.value === step.task_type)?.label ?? 'Tarefa'}
                           </p>
-                          {step.description ? <p className="mt-2 text-sm leading-5 text-slate-700">{step.description}</p> : null}
+                          {step.description ? <p className="mt-2 text-sm leading-5 text-foreground">{step.description}</p> : null}
                         </div>
                       </div>
                     ))}
@@ -530,7 +530,7 @@ export function CadencesPage() {
                       if (!selectedLead) return
                       enrollMutation.mutate({ cadence: selectedCadence, leadId: selectedLead.id })
                     }} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                      <label className="min-w-0 flex-1 text-sm font-medium text-slate-800">
+                      <label className="min-w-0 flex-1 text-sm font-medium text-foreground">
                         Lead da organização
                         <Select value={leadId} onValueChange={setLeadId}>
                           <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione um lead" /></SelectTrigger>
@@ -544,7 +544,7 @@ export function CadencesPage() {
                         {enrollMutation.isPending ? 'Inscrevendo…' : 'Inscrever e criar tarefas'}
                       </Button>
                     </form>
-                    <p className="mt-3 text-xs leading-5 text-slate-600">
+                    <p className="mt-3 text-xs leading-5 text-muted-foreground">
                       Serão criadas {selectedCadence.steps.length} tarefas com os prazos definidos acima. A inscrição não dispara contatos.
                     </p>
                   </CardContent>
@@ -554,8 +554,8 @@ export function CadencesPage() {
               <section aria-labelledby="enrollments-heading" className="space-y-3">
                 <div className="flex flex-wrap items-end justify-between gap-2">
                   <div>
-                    <h3 id="enrollments-heading" className="text-lg font-semibold text-slate-900">Leads inscritos</h3>
-                    <p className="text-sm text-slate-600">As tarefas de cada lead também aparecem em <Link to="/tasks" className="font-medium text-sky-800 hover:underline">Tarefas</Link>.</p>
+                    <h3 id="enrollments-heading" className="text-lg font-semibold text-foreground">Leads inscritos</h3>
+                    <p className="text-sm text-muted-foreground">As tarefas de cada lead também aparecem em <Link to="/tasks" className="font-medium text-primary hover:underline">Tarefas</Link>.</p>
                   </div>
                   <Badge variant="outline">{selectedEnrollments.length} {selectedEnrollments.length === 1 ? 'inscrição' : 'inscrições'}</Badge>
                 </div>
@@ -574,9 +574,9 @@ export function CadencesPage() {
           ) : (
             <Card>
               <CardContent className="flex min-h-64 flex-col items-center justify-center text-center">
-                <Route aria-hidden="true" className="mb-3 h-8 w-8 text-slate-500" />
-                <h3 className="font-semibold text-slate-900">Escolha ou crie uma cadência</h3>
-                <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">Cada modelo organiza etapas como tarefas com intervalos definidos, para que a equipe conduza o contato manualmente.</p>
+                <Route aria-hidden="true" className="mb-3 h-8 w-8 text-muted-foreground" />
+                <h3 className="font-semibold text-foreground">Escolha ou crie uma cadência</h3>
+                <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">Cada modelo organiza etapas como tarefas com intervalos definidos, para que a equipe conduza o contato manualmente.</p>
                 <Button type="button" className="mt-4" onClick={() => setShowCreateForm(true)}>
                   <Plus aria-hidden="true" className="h-4 w-4" />Criar cadência
                 </Button>
@@ -586,7 +586,7 @@ export function CadencesPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <ListChecks aria-hidden="true" className="h-4 w-4" />
         <span>Concluir todas as tarefas encerra a inscrição. Cancelar uma tarefa da sequência cancela também as demais tarefas abertas.</span>
         <CalendarClock aria-hidden="true" className="ml-1 h-4 w-4" />

@@ -7,7 +7,7 @@ const Alert = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEleme
     <div
       ref={ref}
       role="alert"
-      className={cn('rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900', className)}
+      className={cn('rounded-xl border border-warm/30 bg-warm/10 p-4 text-sm text-warm-foreground', className)}
       {...props}
     />
   ),

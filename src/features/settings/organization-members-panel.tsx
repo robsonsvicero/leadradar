@@ -65,7 +65,7 @@ export function OrganizationMembersPanel() {
           <CardDescription>Convide membros ou atribua contas existentes às organizações que você administra.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="border-red-200 bg-red-50 text-red-800" role="alert">
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive" role="alert">
             {organizations.error instanceof Error ? organizations.error.message : 'Não foi possível carregar as organizações.'}
           </Alert>
         </CardContent>
@@ -93,11 +93,11 @@ export function OrganizationMembersPanel() {
       </CardHeader>
       <CardContent className="space-y-5">
         {organizations.data.length > 1 ? (
-          <label className="block space-y-2 text-sm font-medium text-slate-700" htmlFor="membership-organization">
+          <label className="block space-y-2 text-sm font-medium text-foreground" htmlFor="membership-organization">
             Organização
             <select
               id="membership-organization"
-              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+              className="h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={activeOrganizationId}
               onChange={(event) => {
                 setSelectedOrganizationId(event.target.value)
@@ -110,11 +110,11 @@ export function OrganizationMembersPanel() {
             </select>
           </label>
         ) : (
-          <p className="text-sm font-medium text-slate-700">{organizations.data[0].name}</p>
+          <p className="text-sm font-medium text-foreground">{organizations.data[0].name}</p>
         )}
 
         <form className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end" onSubmit={submit}>
-          <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="organization-member-email">
+          <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="organization-member-email">
             E-mail da conta
             <Input
               id="organization-member-email"
@@ -128,11 +128,11 @@ export function OrganizationMembersPanel() {
             />
           </label>
           {isPlatformAdmin ? (
-            <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="organization-member-role">
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="organization-member-role">
               Acesso
               <select
                 id="organization-member-role"
-                className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                className="h-11 w-full rounded-md border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 value={role}
                 onChange={(event) => setRole(event.target.value as 'admin' | 'member')}
               >
@@ -149,27 +149,27 @@ export function OrganizationMembersPanel() {
         </form>
 
         {addMember.isError ? (
-          <Alert className="border-red-200 bg-red-50 text-red-800" role="alert">
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive" role="alert">
             {addMember.error instanceof Error ? addMember.error.message : 'Não foi possível vincular o usuário.'}
           </Alert>
         ) : null}
         {successMessage ? (
-          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800" role="status">{successMessage}</Alert>
+          <Alert className="border-success/30 bg-success/10 text-success-foreground" role="status">{successMessage}</Alert>
         ) : null}
 
-        <section className="border-t border-slate-200 pt-5" aria-labelledby="organization-member-list-title">
-          <h3 id="organization-member-list-title" className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-            <Users aria-hidden="true" className="h-4 w-4 text-sky-700" />
+        <section className="border-t border-border pt-5" aria-labelledby="organization-member-list-title">
+          <h3 id="organization-member-list-title" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Users aria-hidden="true" className="h-4 w-4 text-primary" />
             Pessoas vinculadas
           </h3>
           {members.isLoading ? <Skeleton className="mt-3 h-16 w-full rounded-lg" /> : null}
           {members.isError ? (
-            <Alert className="mt-3 border-red-200 bg-red-50 text-red-800" role="alert">
+            <Alert className="mt-3 border-destructive/30 bg-destructive/10 text-destructive" role="alert">
               {members.error instanceof Error ? members.error.message : 'Não foi possível listar os usuários.'}
             </Alert>
           ) : null}
           {members.data?.length === 0 ? (
-            <p className="mt-3 rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600">
+            <p className="mt-3 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
               Ainda não há usuários vinculados além de você. Cadastre o e-mail acima para começar.
             </p>
           ) : null}
@@ -178,10 +178,10 @@ export function OrganizationMembersPanel() {
               {members.data.map((member) => (
                 <li key={member.user_id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">{member.full_name || member.email}</p>
-                    <p className="break-all text-xs text-slate-600">{member.email}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{member.full_name || member.email}</p>
+                    <p className="break-all text-xs text-muted-foreground">{member.email}</p>
                   </div>
-                  <span className="text-xs font-medium text-slate-600">
+                  <span className="text-xs font-medium text-muted-foreground">
                     {member.role === 'owner' ? 'Proprietário' : member.role === 'admin' ? 'Administrador' : 'Membro'}
                   </span>
                 </li>

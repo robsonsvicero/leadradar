@@ -65,11 +65,11 @@ export function CompanyDetailPage() {
 
   if (companyQuery.isLoading) return <Skeleton className="h-80 w-full rounded-xl" />
   if (companyQuery.isError) {
-    return <Alert className="border-red-200 bg-red-50 text-red-800">
+    return <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
       {companyQuery.error instanceof Error ? companyQuery.error.message : 'Não foi possível carregar esta empresa.'}
     </Alert>
   }
-  if (!company) return <Alert className="border-amber-200 bg-amber-50 text-amber-900">Empresa não encontrada ou sem acesso.</Alert>
+  if (!company) return <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">Empresa não encontrada ou sem acesso.</Alert>
 
   const submitFeedback = (feedbackType: 'helpful' | 'unhelpful') => {
     if (!intelligence.data) return
@@ -82,8 +82,8 @@ export function CompanyDetailPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <header>
-        <h2 className="text-3xl font-semibold text-slate-900">{company.name}</h2>
-        <p className="mt-2 text-sm text-slate-600">Perfil da empresa, evidências digitais e recomendações comerciais.</p>
+        <h2 className="text-3xl font-semibold text-foreground">{company.name}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Perfil da empresa, evidências digitais e recomendações comerciais.</p>
       </header>
 
       <Card>
@@ -91,12 +91,12 @@ export function CompanyDetailPage() {
           <CardTitle>Informações da empresa</CardTitle>
           <CardDescription>Dados empresariais disponíveis no cadastro do lead.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
+        <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
           <InfoLine icon={<MapPin aria-hidden="true" className="h-4 w-4" />} value={[company.city, company.state, company.country].filter(Boolean).join(', ') || 'Localização não informada'} />
           <InfoLine icon={<Globe aria-hidden="true" className="h-4 w-4" />} value={company.website || 'Sem website cadastrado'} />
           <InfoLine icon={company.phone ? <Phone aria-hidden="true" className="h-4 w-4" /> : <Building2 aria-hidden="true" className="h-4 w-4" />} value={company.phone || company.description || 'Telefone e descrição não informados'} />
           <InfoLine icon={<Star aria-hidden="true" className="h-4 w-4" />} value={company.rating === null ? 'Avaliação não informada' : `${company.rating}/5 · ${company.review_count} avaliações`} />
-          <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 sm:col-span-2">
+          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 sm:col-span-2">
             <span>Segmento</span>
             <Badge variant="secondary">{company.category || 'Não informado'}</Badge>
           </div>
@@ -105,12 +105,12 @@ export function CompanyDetailPage() {
 
       {leadQuery.isLoading ? <Skeleton className="h-36 w-full rounded-xl" /> : null}
       {leadQuery.isError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           {leadQuery.error instanceof Error ? leadQuery.error.message : 'Não foi possível carregar o lead desta empresa.'}
         </Alert>
       ) : null}
       {!leadQuery.isLoading && !leadQuery.isError && !lead ? (
-        <Alert className="border-slate-200 bg-slate-50 text-slate-700">
+        <Alert className="border-border bg-muted text-foreground">
           Esta empresa ainda não está associada a um lead. A inteligência comercial fica disponível depois da prospecção.
         </Alert>
       ) : null}
@@ -118,7 +118,7 @@ export function CompanyDetailPage() {
       {lead ? (
         <>
           {prospectingMockMode ? (
-            <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+            <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
               A inteligência de IA usa somente leads reais do Supabase. Os indicadores técnicos atuais continuam disponíveis no modo de demonstração.
             </Alert>
           ) : null}
@@ -126,7 +126,7 @@ export function CompanyDetailPage() {
           <Card>
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2"><Sparkles aria-hidden="true" className="h-5 w-5 text-sky-600" />Inteligência comercial</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Sparkles aria-hidden="true" className="h-5 w-5 text-primary" />Inteligência comercial</CardTitle>
                 <CardDescription className="mt-1">Recomendações baseadas nos dados e sinais coletados para este lead.</CardDescription>
               </div>
               <Button
@@ -145,38 +145,38 @@ export function CompanyDetailPage() {
                 <Score label="AI Score" value={lead.ai_updated_at ? lead.ai_score : null} />
                 <Score label="Action Score" value={lead.ai_updated_at ? lead.action_score : null} prominent />
               </div>
-              <div className="rounded-lg border border-slate-200 p-4">
+              <div className="rounded-lg border border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-semibold text-slate-900">Por que priorizar este lead?</h3>
+                  <h3 className="font-semibold text-foreground">Por que priorizar este lead?</h3>
                   <Badge variant="secondary">Buying Moment {analysis?.buyingMomentScore ?? lead.buying_moment_score ?? '—'}/100</Badge>
                 </div>
                 {lead.action_score_reason ? (
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                     {lead.action_score_reason.split('\n').filter(Boolean).map((reason) => <li key={reason}>{reason}</li>)}
                   </ul>
-                ) : <p className="mt-2 text-sm text-slate-500">A explicação do Action Score estará disponível após a análise comercial.</p>}
+                ) : <p className="mt-2 text-sm text-muted-foreground">A explicação do Action Score estará disponível após a análise comercial.</p>}
               </div>
-              <div className="rounded-lg border border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-900">Aderência ao perfil B2B</h3>
-                <p className="mt-2 text-sm text-slate-700">
+              <div className="rounded-lg border border-border p-4">
+                <h3 className="font-semibold text-foreground">Aderência ao perfil B2B</h3>
+                <p className="mt-2 text-sm text-foreground">
                   {lead.target_fit === 'matched'
                     ? 'Compatível com o perfil-alvo configurado.'
                     : 'A aderência ao perfil B2B não foi confirmada automaticamente.'}
                   {lead.matched_service ? ` Serviço compatível: ${lead.matched_service}.` : ''}
                 </p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {lead.target_fit_reason || 'Este lead ainda não tem cálculo de aderência B2B. O resultado será calculado em uma nova prospecção após a atualização do banco e da função.'}
                 </p>
               </div>
-              <div className="rounded-lg border border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-900">Sinais técnicos disponíveis</h3>
-                <p className="mt-2 text-sm font-medium text-slate-800">Oportunidade técnica: {lead.opportunity}</p>
-                <p className="mt-2 text-sm text-slate-600">{lead.opportunity_reason || 'Não há uma explicação técnica registrada para este lead.'}</p>
-                {lead.recommended_service ? <p className="mt-2 text-sm text-slate-700">Serviço sugerido pelo motor técnico: <strong>{lead.recommended_service}</strong></p> : null}
+              <div className="rounded-lg border border-border p-4">
+                <h3 className="font-semibold text-foreground">Sinais técnicos disponíveis</h3>
+                <p className="mt-2 text-sm font-medium text-foreground">Oportunidade técnica: {lead.opportunity}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{lead.opportunity_reason || 'Não há uma explicação técnica registrada para este lead.'}</p>
+                {lead.recommended_service ? <p className="mt-2 text-sm text-foreground">Serviço sugerido pelo motor técnico: <strong>{lead.recommended_service}</strong></p> : null}
               </div>
 
               {intelligence.isError || intelligence.analyze.isError ? (
-                <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+                <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
                   <AlertCircle aria-hidden="true" className="mr-2 inline h-4 w-4" />
                   {intelligence.analyze.error instanceof Error
                     ? intelligence.analyze.error.message
@@ -189,8 +189,8 @@ export function CompanyDetailPage() {
               {analysis ? (
                 <div className="space-y-5">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{analysis.executiveSummary}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{analysis.digitalSituation}</p>
+                    <h3 className="text-lg font-semibold text-foreground">{analysis.executiveSummary}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{analysis.digitalSituation}</p>
                   </div>
                   <div className="grid gap-5 md:grid-cols-2">
                     <Insight title="Oportunidade" description={analysis.opportunity.description} detail={`${analysis.opportunity.title} · urgência ${analysis.opportunity.urgency} · confiança ${Math.round(analysis.opportunity.confidence * 100)}%`} />
@@ -198,25 +198,25 @@ export function CompanyDetailPage() {
                     <Insight title="Serviço recomendado" description={analysis.recommendedService.reason} detail={analysis.recommendedService.service} />
                     <Insight title="Próxima melhor ação" description={analysis.nextBestAction.reason} detail={analysis.nextBestAction.action.replaceAll('_', ' ')} />
                   </div>
-                  <div className="rounded-lg bg-slate-50 p-4">
-                    <h3 className="font-semibold text-slate-900">Aderência ao ICP</h3>
-                    <p className="mt-2 text-sm text-slate-700">{analysis.icpAssessment.explanation}</p>
-                    {lead.icp_match_reason ? <p className="mt-1 text-xs text-slate-500">{lead.icp_match_reason}</p> : null}
+                  <div className="rounded-lg bg-muted p-4">
+                    <h3 className="font-semibold text-foreground">Aderência ao ICP</h3>
+                    <p className="mt-2 text-sm text-foreground">{analysis.icpAssessment.explanation}</p>
+                    {lead.icp_match_reason ? <p className="mt-1 text-xs text-muted-foreground">{lead.icp_match_reason}</p> : null}
                   </div>
-                  <div className="rounded-lg bg-sky-50 p-4">
-                    <h3 className="font-semibold text-slate-900">Argumento comercial sugerido</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{analysis.salesAngle.argument}</p>
+                  <div className="rounded-lg bg-accent/50 p-4">
+                    <h3 className="font-semibold text-foreground">Argumento comercial sugerido</h3>
+                    <p className="mt-2 text-sm leading-6 text-foreground">{analysis.salesAngle.argument}</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900">Riscos a considerar</h3>
+                    <h3 className="font-semibold text-foreground">Riscos a considerar</h3>
                     {analysis.risks.length ? (
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                         {analysis.risks.map((risk, index) => <li key={`${risk.risk}-${index}`}>{risk.risk}: {risk.explanation}</li>)}
                       </ul>
-                    ) : <p className="mt-2 text-sm text-slate-500">Nenhum risco comercial identificado nos dados disponíveis.</p>}
+                    ) : <p className="mt-2 text-sm text-muted-foreground">Nenhum risco comercial identificado nos dados disponíveis.</p>}
                   </div>
-                  <div className="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-slate-500">Modelo {intelligence.data?.model} · {new Date(intelligence.data?.created_at ?? '').toLocaleString('pt-BR')}</p>
+                  <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-muted-foreground">Modelo {intelligence.data?.model} · {new Date(intelligence.data?.created_at ?? '').toLocaleString('pt-BR')}</p>
                     <div className="flex flex-wrap gap-2">
                       <Button variant="outline" size="sm" onClick={() => submitFeedback('helpful')} disabled={feedback.isPending}>
                         <ThumbsUp aria-hidden="true" className="mr-1 h-4 w-4" />Útil
@@ -226,26 +226,26 @@ export function CompanyDetailPage() {
                       </Button>
                     </div>
                   </div>
-                  {feedbackMessage ? <p role="status" className="text-sm text-emerald-700">{feedbackMessage}</p> : null}
-                  {feedback.isError ? <p role="alert" className="text-sm text-red-700">{feedback.error.message}</p> : null}
+                  {feedbackMessage ? <p role="status" className="text-sm text-success-foreground">{feedbackMessage}</p> : null}
+                  {feedback.isError ? <p role="alert" className="text-sm text-destructive">{feedback.error.message}</p> : null}
                 </div>
               ) : !intelligence.isLoading && !prospectingMockMode ? (
-                <p className="text-sm text-slate-500">A análise ainda não foi gerada. Ela só será enviada à OpenAI quando você solicitar.</p>
+                <p className="text-sm text-muted-foreground">A análise ainda não foi gerada. Ela só será enviada à OpenAI quando você solicitar.</p>
               ) : null}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><MessageSquareText aria-hidden="true" className="h-5 w-5 text-sky-600" />Rascunhos de abordagem</CardTitle>
+              <CardTitle className="flex items-center gap-2"><MessageSquareText aria-hidden="true" className="h-5 w-5 text-primary" />Rascunhos de abordagem</CardTitle>
               <CardDescription>Gera três opções para revisão. Nenhuma mensagem é enviada automaticamente.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row">
-                <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-slate-700">
+                <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-foreground">
                   Canal
                   <select
-                    className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                    className="h-10 rounded-lg border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     value={channel}
                     onChange={(event) => setChannel(event.target.value as keyof typeof channelLabels)}
                     disabled={prospectingMockMode}
@@ -263,11 +263,11 @@ export function CompanyDetailPage() {
                   </Button>
                 </div>
               </div>
-              {!analysis && !prospectingMockMode ? <p className="text-sm text-slate-500">Gere primeiro a inteligência do lead para criar mensagens baseadas em evidências.</p> : null}
-              {outreach.generate.isError ? <Alert className="border-red-200 bg-red-50 text-red-800">{outreach.generate.error.message}</Alert> : null}
-              {outreach.isError ? <Alert className="border-red-200 bg-red-50 text-red-800">{outreach.error.message}</Alert> : null}
+              {!analysis && !prospectingMockMode ? <p className="text-sm text-muted-foreground">Gere primeiro a inteligência do lead para criar mensagens baseadas em evidências.</p> : null}
+              {outreach.generate.isError ? <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{outreach.generate.error.message}</Alert> : null}
+              {outreach.isError ? <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{outreach.error.message}</Alert> : null}
               {currentDraft && currentVariant ? (
-                <div className="space-y-4 border-t border-slate-200 pt-4">
+                <div className="space-y-4 border-t border-border pt-4">
                   <div className="flex flex-wrap gap-2">
                     {currentDraft.variants.map((variant, index) => (
                       <Button
@@ -281,24 +281,24 @@ export function CompanyDetailPage() {
                       </Button>
                     ))}
                   </div>
-                  <div className="whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                  <div className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm leading-6 text-foreground">
                     {editingCurrentVariant ? (
                       <div className="space-y-3">
                         {currentDraft.channel === 'email' ? (
-                          <label className="block text-sm font-medium text-slate-700">
+                          <label className="block text-sm font-medium text-foreground">
                             Assunto
                             <input
-                              className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3"
+                              className="mt-1 h-10 w-full rounded-lg border border-border bg-card px-3"
                               maxLength={160}
                               value={editingVariant?.subject ?? ''}
                               onChange={(event) => setEditingVariant((current) => current ? { ...current, subject: event.target.value } : current)}
                             />
                           </label>
                         ) : null}
-                        <label className="block text-sm font-medium text-slate-700">
+                        <label className="block text-sm font-medium text-foreground">
                           Mensagem
                           <textarea
-                            className="mt-1 min-h-40 w-full rounded-lg border border-slate-300 bg-white p-3"
+                            className="mt-1 min-h-40 w-full rounded-lg border border-border bg-card p-3"
                             maxLength={1800}
                             value={editingVariant?.body ?? ''}
                             onChange={(event) => setEditingVariant((current) => current ? { ...current, body: event.target.value } : current)}
@@ -307,12 +307,12 @@ export function CompanyDetailPage() {
                       </div>
                     ) : (
                       <>
-                        {currentVariant.subject ? <p className="mb-3 font-semibold text-slate-900">Assunto: {currentVariant.subject}</p> : null}
+                        {currentVariant.subject ? <p className="mb-3 font-semibold text-foreground">Assunto: {currentVariant.subject}</p> : null}
                         {currentVariant.body}
                       </>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Qualidade {currentVariant.overallQualityScore}/100 · Personalização {currentVariant.personalizationScore}/100 · Risco {currentVariant.riskScore}/100
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
@@ -360,8 +360,8 @@ export function CompanyDetailPage() {
                     )}
                     {currentDraft.status === 'approved' ? <Badge variant="success">Aprovado · não enviado</Badge> : <Badge variant="secondary">Aguardando revisão</Badge>}
                   </div>
-                  {outreach.approve.isError ? <p role="alert" className="text-sm text-red-700">{outreach.approve.error.message}</p> : null}
-                  {outreach.edit.isError ? <p role="alert" className="text-sm text-red-700">{outreach.edit.error.message}</p> : null}
+                  {outreach.approve.isError ? <p role="alert" className="text-sm text-destructive">{outreach.approve.error.message}</p> : null}
+                  {outreach.edit.isError ? <p role="alert" className="text-sm text-destructive">{outreach.edit.error.message}</p> : null}
                 </div>
               ) : null}
             </CardContent>
@@ -369,17 +369,17 @@ export function CompanyDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><CornerDownRight aria-hidden="true" className="h-5 w-5 text-sky-600" />Follow-up assistido</CardTitle>
+              <CardTitle className="flex items-center gap-2"><CornerDownRight aria-hidden="true" className="h-5 w-5 text-primary" />Follow-up assistido</CardTitle>
               <CardDescription>
                 Gere três opções com base na inteligência do lead e no contexto que você informar. Revise e aprove antes de usar; nada é enviado ou agendado.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <label className="block text-sm font-medium text-slate-700" htmlFor="follow-up-context">
+              <label className="block text-sm font-medium text-foreground" htmlFor="follow-up-context">
                 Resumo do contato anterior
                 <textarea
                   id="follow-up-context"
-                  className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 bg-white p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                  className="mt-1 min-h-24 w-full rounded-lg border border-border bg-card p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   maxLength={1500}
                   placeholder="Ex.: enviei uma apresentação do serviço na semana passada e pedi para conversarmos sobre a experiência mobile."
                   value={interactionContext}
@@ -388,14 +388,14 @@ export function CompanyDetailPage() {
                   aria-describedby="follow-up-context-help"
                 />
               </label>
-              <p id="follow-up-context-help" className="text-xs leading-5 text-slate-500">
+              <p id="follow-up-context-help" className="text-xs leading-5 text-muted-foreground">
                 Informe somente o que aconteceu; evite dados pessoais. O sistema não tem acesso a mensagens enviadas nem à caixa de entrada.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-slate-700">
+                <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-foreground">
                   Canal
                   <select
-                    className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                    className="h-10 rounded-lg border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     value={channel}
                     onChange={(event) => {
                       setChannel(event.target.value as keyof typeof channelLabels)
@@ -418,12 +418,12 @@ export function CompanyDetailPage() {
                   {followUp.generate.isPending ? 'Criando follow-ups…' : 'Gerar 3 follow-ups'}
                 </Button>
               </div>
-              {!analysis && !prospectingMockMode ? <p className="text-sm text-slate-500">Gere primeiro a inteligência do lead para criar follow-ups baseados nas evidências disponíveis.</p> : null}
-              {followUp.generate.isError ? <Alert className="border-red-200 bg-red-50 text-red-800">{followUp.generate.error.message}</Alert> : null}
-              {followUp.isError ? <Alert className="border-red-200 bg-red-50 text-red-800">{followUp.error.message}</Alert> : null}
+              {!analysis && !prospectingMockMode ? <p className="text-sm text-muted-foreground">Gere primeiro a inteligência do lead para criar follow-ups baseados nas evidências disponíveis.</p> : null}
+              {followUp.generate.isError ? <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{followUp.generate.error.message}</Alert> : null}
+              {followUp.isError ? <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{followUp.error.message}</Alert> : null}
               {currentFollowUpDraft && currentFollowUpVariant ? (
-                <div className="space-y-4 border-t border-slate-200 pt-4">
-                  <p className="text-xs leading-5 text-slate-500">
+                <div className="space-y-4 border-t border-border pt-4">
+                  <p className="text-xs leading-5 text-muted-foreground">
                     Contexto usado: {currentFollowUpDraft.interaction_context}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -439,24 +439,24 @@ export function CompanyDetailPage() {
                       </Button>
                     ))}
                   </div>
-                  <div className="whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                  <div className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm leading-6 text-foreground">
                     {editingCurrentFollowUpVariant ? (
                       <div className="space-y-3">
                         {currentFollowUpDraft.channel === 'email' ? (
-                          <label className="block text-sm font-medium text-slate-700">
+                          <label className="block text-sm font-medium text-foreground">
                             Assunto
                             <input
-                              className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3"
+                              className="mt-1 h-10 w-full rounded-lg border border-border bg-card px-3"
                               maxLength={160}
                               value={editingFollowUpVariant?.subject ?? ''}
                               onChange={(event) => setEditingFollowUpVariant((current) => current ? { ...current, subject: event.target.value } : current)}
                             />
                           </label>
                         ) : null}
-                        <label className="block text-sm font-medium text-slate-700">
+                        <label className="block text-sm font-medium text-foreground">
                           Mensagem
                           <textarea
-                            className="mt-1 min-h-40 w-full rounded-lg border border-slate-300 bg-white p-3"
+                            className="mt-1 min-h-40 w-full rounded-lg border border-border bg-card p-3"
                             maxLength={1800}
                             value={editingFollowUpVariant?.body ?? ''}
                             onChange={(event) => setEditingFollowUpVariant((current) => current ? { ...current, body: event.target.value } : current)}
@@ -465,12 +465,12 @@ export function CompanyDetailPage() {
                       </div>
                     ) : (
                       <>
-                        {currentFollowUpVariant.subject ? <p className="mb-3 font-semibold text-slate-900">Assunto: {currentFollowUpVariant.subject}</p> : null}
+                        {currentFollowUpVariant.subject ? <p className="mb-3 font-semibold text-foreground">Assunto: {currentFollowUpVariant.subject}</p> : null}
                         {currentFollowUpVariant.body}
                       </>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Qualidade {currentFollowUpVariant.overallQualityScore}/100 · Personalização {currentFollowUpVariant.personalizationScore}/100 · Risco {currentFollowUpVariant.riskScore}/100
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
@@ -518,8 +518,8 @@ export function CompanyDetailPage() {
                     )}
                     {currentFollowUpDraft.status === 'approved' ? <Badge variant="success">Aprovado · não enviado</Badge> : <Badge variant="secondary">Aguardando revisão</Badge>}
                   </div>
-                  {followUp.approve.isError ? <p role="alert" className="text-sm text-red-700">{followUp.approve.error.message}</p> : null}
-                  {followUp.edit.isError ? <p role="alert" className="text-sm text-red-700">{followUp.edit.error.message}</p> : null}
+                  {followUp.approve.isError ? <p role="alert" className="text-sm text-destructive">{followUp.approve.error.message}</p> : null}
+                  {followUp.edit.isError ? <p role="alert" className="text-sm text-destructive">{followUp.edit.error.message}</p> : null}
                 </div>
               ) : null}
             </CardContent>
@@ -543,9 +543,9 @@ function InfoLine({ icon, value }: { icon: React.ReactNode; value: string }) {
 
 function Score({ label, value, prominent = false }: { label: string; value: number | null; prominent?: boolean }) {
   return (
-    <div className={prominent ? 'rounded-lg bg-sky-50 p-4' : 'rounded-lg bg-slate-50 p-4'}>
-      <p className="text-xs font-medium text-slate-600">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{value ?? '—'}<span className="ml-1 text-sm font-normal text-slate-500">/100</span></p>
+    <div className={prominent ? 'rounded-lg bg-accent/50 p-4' : 'rounded-lg bg-muted p-4'}>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{value ?? '—'}<span className="ml-1 text-sm font-normal text-muted-foreground">/100</span></p>
     </div>
   )
 }
@@ -553,9 +553,9 @@ function Score({ label, value, prominent = false }: { label: string; value: numb
 function Insight({ title, description, detail }: { title: string; description: string; detail: string }) {
   return (
     <div>
-      <h3 className="font-semibold text-slate-900">{title}</h3>
-      <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
-      <p className="mt-2 text-xs font-medium capitalize text-sky-800">{detail}</p>
+      <h3 className="font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
+      <p className="mt-2 text-xs font-medium capitalize text-primary">{detail}</p>
     </div>
   )
 }

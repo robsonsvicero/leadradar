@@ -62,7 +62,7 @@ export function OrganizationManagementPanel() {
       <CardContent className="space-y-6">
         <form className="space-y-4" onSubmit={submit}>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="managed-organization-name">
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="managed-organization-name">
               Nome da organização
               <Input
                 id="managed-organization-name"
@@ -75,7 +75,7 @@ export function OrganizationManagementPanel() {
                 placeholder="Ex.: Studio Nova"
               />
             </label>
-            <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="managed-organization-email">
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="managed-organization-email">
               E-mail do administrador
               <Input
                 id="managed-organization-email"
@@ -88,7 +88,7 @@ export function OrganizationManagementPanel() {
                 placeholder="admin@empresa.com.br"
               />
             </label>
-            <label className="space-y-2 text-sm font-medium text-slate-700 md:col-span-2" htmlFor="managed-organization-address">
+            <label className="space-y-2 text-sm font-medium text-foreground md:col-span-2" htmlFor="managed-organization-address">
               Endereço
               <Input
                 id="managed-organization-address"
@@ -101,7 +101,7 @@ export function OrganizationManagementPanel() {
                 placeholder="Rua, número, cidade e estado"
               />
             </label>
-            <label className="space-y-2 text-sm font-medium text-slate-700" htmlFor="managed-organization-whatsapp">
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="managed-organization-whatsapp">
               WhatsApp de contato
               <Input
                 id="managed-organization-whatsapp"
@@ -118,12 +118,12 @@ export function OrganizationManagementPanel() {
           </div>
 
           {createOrganization.isError ? (
-            <Alert className="border-red-200 bg-red-50 text-red-800" role="alert">
+            <Alert className="border-destructive/30 bg-destructive/10 text-destructive" role="alert">
               {createOrganization.error instanceof Error ? createOrganization.error.message : 'Não foi possível cadastrar a organização.'}
             </Alert>
           ) : null}
           {successMessage ? (
-            <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800" role="status">
+            <Alert className="border-success/30 bg-success/10 text-success-foreground" role="status">
               {successMessage}
             </Alert>
           ) : null}
@@ -133,32 +133,32 @@ export function OrganizationManagementPanel() {
           </Button>
         </form>
 
-        <div className="border-t border-slate-200 pt-5">
-          <h3 className="text-sm font-semibold text-slate-900">Organizações cadastradas</h3>
+        <div className="border-t border-border pt-5">
+          <h3 className="text-sm font-semibold text-foreground">Organizações cadastradas</h3>
           {organizations.isLoading ? <Skeleton className="mt-3 h-24 w-full rounded-lg" /> : null}
           {organizations.isError ? (
-            <Alert className="mt-3 border-red-200 bg-red-50 text-red-800" role="alert">
+            <Alert className="mt-3 border-destructive/30 bg-destructive/10 text-destructive" role="alert">
               {organizations.error instanceof Error ? organizations.error.message : 'Não foi possível carregar as organizações.'}
             </Alert>
           ) : null}
           {organizations.data?.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-600">Nenhuma organização cadastrada até o momento.</p>
+            <p className="mt-3 text-sm text-muted-foreground">Nenhuma organização cadastrada até o momento.</p>
           ) : null}
           {organizations.data?.length ? (
             <ul className="mt-3 divide-y divide-slate-200">
               {organizations.data.map((organization) => (
                 <li key={organization.id} className="grid gap-2 py-4 text-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                   <div className="min-w-0">
-                    <p className="flex items-center gap-2 font-medium text-slate-900">
-                      <Building2 aria-hidden="true" className="h-4 w-4 shrink-0 text-sky-700" />
+                    <p className="flex items-center gap-2 font-medium text-foreground">
+                      <Building2 aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />
                       <span className="truncate">{organization.name}</span>
                     </p>
-                    <p className="mt-1 flex items-start gap-2 text-slate-600">
+                    <p className="mt-1 flex items-start gap-2 text-muted-foreground">
                       <MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
                       <span>{organization.address}</span>
                     </p>
                   </div>
-                  <div className="space-y-1 text-slate-600 md:text-right">
+                  <div className="space-y-1 text-muted-foreground md:text-right">
                     <p className="flex items-center gap-2 break-all md:justify-end">
                       <Mail aria-hidden="true" className="h-4 w-4 shrink-0" />
                       {organization.email}
@@ -167,7 +167,7 @@ export function OrganizationManagementPanel() {
                       <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
                       {organization.whatsapp}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {organization.admin_invite_sent_at ? 'Convite enviado' : 'Convite pendente'}
                     </p>
                   </div>

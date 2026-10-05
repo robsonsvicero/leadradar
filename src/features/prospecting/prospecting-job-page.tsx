@@ -63,10 +63,10 @@ export function ProspectingJobPage() {
   if (job.isError || !job.data) {
     return (
       <div className="mx-auto max-w-3xl space-y-5">
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-sky-700">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
           <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Voltar ao dashboard
         </Link>
-        <Alert className="border-red-200 bg-red-50 text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           {job.error instanceof Error ? job.error.message : 'Não foi possível carregar esta prospecção.'}
         </Alert>
         <Button variant="outline" onClick={() => void job.refetch()}>Tentar novamente</Button>
@@ -89,27 +89,27 @@ export function ProspectingJobPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-sky-700">
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
         <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Voltar ao dashboard
       </Link>
 
       {prospectingMockMode ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Demonstração local: os resultados exibidos são fictícios e não foram pesquisados no Google.
         </Alert>
       ) : null}
 
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold text-slate-900">Prospecção de {currentJob.segment}</h2>
-          <p className="mt-2 text-sm text-slate-600">{currentJob.location} · até {currentJob.target_quantity} empresas</p>
+          <h2 className="text-3xl font-semibold text-foreground">Prospecção de {currentJob.segment}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{currentJob.location} · até {currentJob.target_quantity} empresas</p>
         </div>
         <Badge variant={stateVariant}>{currentJob.status === 'running' ? 'Em andamento' : currentJob.status === 'queued' ? 'Na fila' : currentJob.status === 'completed' ? 'Concluída' : currentJob.status === 'failed' ? 'Falhou' : 'Cancelada'}</Badge>
       </header>
 
-      {cancel.isError ? <Alert className="border-red-200 bg-red-50 text-red-800">{cancel.error.message}</Alert> : null}
+      {cancel.isError ? <Alert className="border-destructive/30 bg-destructive/10 text-destructive">{cancel.error.message}</Alert> : null}
       {currentJob.error_message ? (
-        <Alert className="border-red-200 bg-red-50 text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           <CircleAlert aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {currentJob.error_message}
         </Alert>
@@ -123,7 +123,7 @@ export function ProspectingJobPage() {
                 ? stepNames.cancelled
                 : stepNames[currentJob.current_step] ?? 'Processando prospecção'}
             </CardTitle>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               {active
                 ? 'O progresso é atualizado automaticamente.'
                 : currentJob.status === 'cancelled'
@@ -141,15 +141,15 @@ export function ProspectingJobPage() {
           ) : null}
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between text-sm font-medium text-slate-700">
+          <div className="flex items-center justify-between text-sm font-medium text-foreground">
             <span>Progresso</span>
             <span>{currentJob.progress_percentage}%</span>
           </div>
           <Progress value={currentJob.progress_percentage} className="mt-2 h-3" />
           {active
-            ? <p className="mt-3 text-sm text-slate-500">Esta página acompanha a execução em segundo plano.</p>
+            ? <p className="mt-3 text-sm text-muted-foreground">Esta página acompanha a execução em segundo plano.</p>
             : currentJob.status === 'cancelled'
-              ? <p className="mt-3 text-sm text-slate-500">32% é o último progresso registrado antes do cancelamento.</p>
+              ? <p className="mt-3 text-sm text-muted-foreground">32% é o último progresso registrado antes do cancelamento.</p>
               : null}
         </CardContent>
       </Card>
@@ -167,40 +167,40 @@ export function ProspectingJobPage() {
       {currentJob.status === 'completed' ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-slate-900">Melhores oportunidades</h3>
-            <Link to="/leads" className="text-sm font-medium text-sky-700 hover:underline">Ver todos os leads</Link>
+            <h3 className="text-xl font-semibold text-foreground">Melhores oportunidades</h3>
+            <Link to="/leads" className="text-sm font-medium text-primary hover:underline">Ver todos os leads</Link>
           </div>
           {results.isLoading ? <Skeleton className="h-44 w-full rounded-xl" /> : null}
           {results.isError ? (
-            <Alert className="border-red-200 bg-red-50 text-red-800">
+            <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
               {results.error instanceof Error ? results.error.message : 'Não foi possível carregar os resultados.'}
             </Alert>
           ) : null}
           {results.data?.length === 0 ? (
-            <Alert className="border-slate-200 bg-slate-50 text-slate-700">A prospecção terminou, mas não retornou leads associados ao job.</Alert>
+            <Alert className="border-border bg-muted text-foreground">A prospecção terminou, mas não retornou leads associados ao job.</Alert>
           ) : null}
           {results.data?.slice(0, 10).map((lead) => (
             <Card key={lead.id}>
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h4 className="font-semibold text-slate-900">{lead.company_name}</h4>
-                  <p className="mt-1 text-sm text-slate-600">{lead.segment} · {lead.city}</p>
-                  <p className="mt-1 text-sm text-slate-700"><strong>Oportunidade técnica:</strong> {lead.opportunity}</p>
-                  <p className="mt-1 text-xs text-slate-500">{lead.opportunity_reason}</p>
+                  <h4 className="font-semibold text-foreground">{lead.company_name}</h4>
+                  <p className="mt-1 text-sm text-muted-foreground">{lead.segment} · {lead.city}</p>
+                  <p className="mt-1 text-sm text-foreground"><strong>Oportunidade técnica:</strong> {lead.opportunity}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{lead.opportunity_reason}</p>
                   {lead.target_fit ? (
                     <div className="mt-2">
-                      <p className="text-sm text-slate-700">
+                      <p className="text-sm text-foreground">
                         <strong>Aderência B2B:</strong>{' '}
                         {lead.target_fit === 'matched' ? 'Compatível com o perfil-alvo' : 'Não confirmada automaticamente'}
                         {lead.matched_service ? ` · Serviço: ${lead.matched_service}` : ''}
                       </p>
-                      {lead.target_fit_reason ? <p className="mt-1 text-xs text-slate-500">{lead.target_fit_reason}</p> : null}
+                      {lead.target_fit_reason ? <p className="mt-1 text-xs text-muted-foreground">{lead.target_fit_reason}</p> : null}
                     </div>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-semibold text-slate-700">Score {lead.score}</span>
-                  <Badge variant={lead.classification === 'hot' ? 'success' : lead.classification === 'warm' ? 'warning' : 'outline'}>
+                  <span className="text-sm font-semibold text-foreground">Score {lead.score}</span>
+                  <Badge variant={lead.classification === 'hot' ? 'hot' : lead.classification === 'warm' ? 'warm' : 'cold'}>
                     {lead.classification}
                   </Badge>
                 </div>
@@ -218,10 +218,10 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon?:
     <Card>
       <CardContent className="flex items-center justify-between gap-3 p-4">
         <div>
-          <p className="text-xs text-slate-500">{label}</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{value}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{value}</p>
         </div>
-        {icon ?? <Clock3 aria-hidden="true" className="h-4 w-4 text-slate-400" />}
+        {icon ?? <Clock3 aria-hidden="true" className="h-4 w-4 text-muted-foreground" />}
       </CardContent>
     </Card>
   )

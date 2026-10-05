@@ -5,17 +5,35 @@ import type { Lead, LeadActivity, OrganizationMember, PipelineStage } from '../.
 
 const activityStorageKey = 'lead-radar-demo-activities'
 const stageTemplates = [
-  ['Novo', 'new', '#64748b', 5, false, false],
-  ['Qualificado', 'qualified', '#0ea5e9', 10, false, false],
-  ['Contato pendente', 'contact_pending', '#6366f1', 15, false, false],
-  ['Contatado', 'contacted', '#8b5cf6', 20, false, false],
-  ['Respondeu', 'replied', '#d946ef', 30, false, false],
-  ['Reunião', 'meeting', '#f59e0b', 45, false, false],
-  ['Proposta', 'proposal', '#f97316', 60, false, false],
-  ['Negociação', 'negotiation', '#ef4444', 75, false, false],
-  ['Ganho', 'won', '#16a34a', 100, true, false],
-  ['Perdido', 'lost', '#475569', 0, false, true],
+  ['Novo', 'new', 'hsl(var(--cold))', 5, false, false],
+  ['Qualificado', 'qualified', 'hsl(var(--chart-1))', 10, false, false],
+  ['Contato pendente', 'contact_pending', 'hsl(var(--chart-5))', 15, false, false],
+  ['Contatado', 'contacted', 'hsl(var(--chart-1))', 20, false, false],
+  ['Respondeu', 'replied', 'hsl(var(--chart-2))', 30, false, false],
+  ['Reunião', 'meeting', 'hsl(var(--chart-3))', 45, false, false],
+  ['Proposta', 'proposal', 'hsl(var(--chart-4))', 60, false, false],
+  ['Negociação', 'negotiation', 'hsl(var(--hot))', 75, false, false],
+  ['Ganho', 'won', 'hsl(var(--success))', 100, true, false],
+  ['Perdido', 'lost', 'hsl(var(--cold))', 0, false, true],
 ] as const
+
+const legacyStageColorTokens: Record<string, { color: string; token: string }> = {
+  new: { color: '#64748b', token: 'hsl(var(--cold))' },
+  qualified: { color: '#0ea5e9', token: 'hsl(var(--chart-1))' },
+  contact_pending: { color: '#6366f1', token: 'hsl(var(--chart-5))' },
+  contacted: { color: '#8b5cf6', token: 'hsl(var(--chart-1))' },
+  replied: { color: '#d946ef', token: 'hsl(var(--chart-2))' },
+  meeting: { color: '#f59e0b', token: 'hsl(var(--chart-3))' },
+  proposal: { color: '#f97316', token: 'hsl(var(--chart-4))' },
+  negotiation: { color: '#ef4444', token: 'hsl(var(--hot))' },
+  won: { color: '#16a34a', token: 'hsl(var(--success))' },
+  lost: { color: '#475569', token: 'hsl(var(--cold))' },
+}
+
+export function getPipelineStageColor(stage: PipelineStage): string {
+  const legacy = legacyStageColorTokens[stage.slug]
+  return legacy?.color === stage.color ? legacy.token : stage.color
+}
 
 export function createDefaultPipelineStages(organizationId: string): PipelineStage[] {
   return stageTemplates.map(([name, slug, color, probability, is_won, is_lost], position) => ({

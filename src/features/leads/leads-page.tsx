@@ -98,7 +98,7 @@ export function LeadsPage() {
 
   if (leadsQuery.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-800">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         {leadsQuery.error instanceof Error ? leadsQuery.error.message : 'Não foi possível carregar os leads.'}
       </Alert>
     )
@@ -107,14 +107,14 @@ export function LeadsPage() {
   return (
     <div className="space-y-6">
       {prospectingMockMode ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+        <Alert className="border-warm/30 bg-warm/10 text-warm-foreground">
           Modo de demonstração: estes registros são fictícios e estão salvos apenas neste navegador.
         </Alert>
       ) : null}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-600">Leads</p>
-          <h2 className="text-3xl font-semibold text-slate-900">Pipeline de prospecção</h2>
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Leads</p>
+          <h2 className="text-3xl font-semibold text-foreground">Pipeline de prospecção</h2>
         </div>
         <Button asChild>
           <Link to="/prospecting/new">Nova prospecção</Link>
@@ -126,7 +126,7 @@ export function LeadsPage() {
           <CardTitle>Lista de leads</CardTitle>
           <div className="flex flex-col gap-2 md:flex-row">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 className="w-[220px] pl-9"
                 placeholder="Buscar empresa"
@@ -179,8 +179,8 @@ export function LeadsPage() {
 
         <CardContent>
           {selectedLeadIds.size > 0 ? (
-            <div className="mb-4 flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-medium text-slate-700" aria-live="polite">
+            <div className="mb-4 flex flex-col gap-3 rounded-lg border border-border bg-muted p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-medium text-foreground" aria-live="polite">
                 {selectedLeadIds.size} {selectedLeadIds.size === 1 ? 'lead selecionado' : 'leads selecionados'}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -201,10 +201,10 @@ export function LeadsPage() {
           ) : null}
 
           {filteredLeads.length === 0 ? (
-            <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center">
-              <Star className="mb-3 h-10 w-10 text-slate-400" />
-              <h3 className="text-lg font-semibold text-slate-900">Nenhum lead encontrado</h3>
-              <p className="mt-2 max-w-md text-sm text-slate-500">Ajuste os filtros ou comece a descobrir novas empresas no radar de prospecção.</p>
+            <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted text-center">
+              <Star className="mb-3 h-10 w-10 text-muted-foreground" />
+              <h3 className="text-lg font-semibold text-foreground">Nenhum lead encontrado</h3>
+              <p className="mt-2 max-w-md text-sm text-muted-foreground">Ajuste os filtros ou comece a descobrir novas empresas no radar de prospecção.</p>
               <Button asChild className="mt-4">
                 <Link to="/prospecting/new">Iniciar prospecção</Link>
               </Button>
@@ -222,7 +222,7 @@ export function LeadsPage() {
                       }}
                       onChange={toggleVisibleSelection}
                       aria-label="Selecionar todos os leads filtrados"
-                      className="h-4 w-4 rounded border-slate-300 accent-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                      className="h-4 w-4 rounded border-border accent-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     />
                   </TableHead>
                   <TableHead>Empresa</TableHead>
@@ -244,19 +244,19 @@ export function LeadsPage() {
                         checked={selectedLeadIds.has(lead.id)}
                         onChange={() => toggleLeadSelection(lead.id)}
                         aria-label={`Selecionar ${lead.company_name}`}
-                        className="h-4 w-4 rounded border-slate-300 accent-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                        className="h-4 w-4 rounded border-border accent-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       />
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
-                        <Link to={`/companies/${lead.company_id}`} className="font-medium text-sky-700 hover:underline">
+                        <Link to={`/companies/${lead.company_id}`} className="font-medium text-primary hover:underline">
                           {lead.company_name}
                         </Link>
                         {lead.company_email ? (
                           <a
                             href={`mailto:${lead.company_email}`}
                             aria-label={`Enviar e-mail para ${lead.company_email}`}
-                            className="inline-flex max-w-full items-center gap-1.5 text-xs text-slate-600 underline-offset-4 hover:text-sky-700 hover:underline"
+                            className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
                           >
                             <Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                             <span className="break-all">{lead.company_email}</span>
@@ -267,7 +267,7 @@ export function LeadsPage() {
                     <TableCell>{lead.segment}</TableCell>
                     <TableCell>{lead.score}</TableCell>
                     <TableCell>
-                      <Badge variant={lead.classification === 'hot' ? 'success' : lead.classification === 'warm' ? 'warning' : 'outline'}>
+                      <Badge variant={lead.classification === 'hot' ? 'hot' : lead.classification === 'warm' ? 'warm' : 'cold'}>
                         {lead.classification}
                       </Badge>
                     </TableCell>
@@ -275,7 +275,7 @@ export function LeadsPage() {
                       <div className="space-y-1">
                         <p>{lead.opportunity}</p>
                         {lead.target_fit ? (
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted-foreground">
                             B2B: {lead.target_fit === 'matched' ? 'compatível' : 'não confirmado'}
                             {lead.matched_service ? ` · ${lead.matched_service}` : ''}
                           </p>
@@ -291,7 +291,7 @@ export function LeadsPage() {
                         size="icon"
                         aria-label={`Excluir lead ${lead.company_name}`}
                         onClick={() => requestDeletion([lead.id])}
-                        className="text-red-700 hover:bg-red-50 hover:text-red-800"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 aria-hidden="true" className="h-4 w-4" />
                       </Button>
@@ -304,25 +304,25 @@ export function LeadsPage() {
         </CardContent>
       </Card>
       {pendingDeletion ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/40 p-4">
           <section
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="delete-leads-title"
             aria-describedby="delete-leads-description"
-            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
           >
-            <h3 id="delete-leads-title" className="text-lg font-semibold text-slate-900">
+            <h3 id="delete-leads-title" className="text-lg font-semibold text-foreground">
               {pendingDeletion.ids.length === 1 ? 'Excluir este lead?' : `Excluir ${pendingDeletion.ids.length} leads?`}
             </h3>
-            <p id="delete-leads-description" className="mt-2 text-sm leading-6 text-slate-600">
+            <p id="delete-leads-description" className="mt-2 text-sm leading-6 text-muted-foreground">
               Esta ação é permanente. Atividades, conversas, reuniões, propostas e cadências vinculadas também serão removidas. Tarefas serão mantidas sem vínculo com o lead.
             </p>
             {pendingDeletion.ids.length === 1 ? (
-              <p className="mt-3 break-words text-sm font-medium text-slate-800">{pendingDeletion.companyNames[0]}</p>
+              <p className="mt-3 break-words text-sm font-medium text-foreground">{pendingDeletion.companyNames[0]}</p>
             ) : null}
             {deleteMutation.isError ? (
-              <Alert className="mt-4 border-red-200 bg-red-50 text-red-800">
+              <Alert className="mt-4 border-destructive/30 bg-destructive/10 text-destructive">
                 {deleteMutation.error instanceof Error ? deleteMutation.error.message : 'Não foi possível excluir os leads.'}
               </Alert>
             ) : null}

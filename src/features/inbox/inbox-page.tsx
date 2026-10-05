@@ -149,11 +149,11 @@ export function InboxPage() {
   })
 
   if (workspace.isLoading) {
-    return <div className="h-96 animate-pulse rounded-xl bg-slate-200" aria-label="Carregando Inbox" />
+    return <div className="h-96 animate-pulse rounded-xl bg-muted" aria-label="Carregando Inbox" />
   }
   if (workspace.isError) {
     return (
-      <Alert className="border-red-200 bg-red-50 text-red-900">
+      <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
         <div className="flex items-start gap-3">
           <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -176,8 +176,8 @@ export function InboxPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Inbox</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Inbox</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Revise conversas registradas manualmente e mantenha o próximo contato no contexto do lead.
           </p>
         </div>
@@ -199,12 +199,12 @@ export function InboxPage() {
         </div>
       </header>
 
-      <Alert className="border-sky-200 bg-sky-50 text-sky-950">
+      <Alert className="border-primary/30 bg-accent/50 text-primary">
         Registro manual: o Inbox não sincroniza e-mail ou WhatsApp. Rascunhos ficam salvos para revisão; mensagens enviadas precisam ter sido enviadas fora do Lead Radar.
       </Alert>
 
       {actionError ? (
-        <Alert className="border-red-200 bg-red-50 text-red-900">
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
           <p className="font-semibold">A alteração não foi salva.</p>
           <p className="mt-1">{actionError.message}</p>
         </Alert>
@@ -225,13 +225,13 @@ export function InboxPage() {
                   createMutation.mutate({ lead: selectedLead, channel, title })
                 }}
               >
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
+                <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
                   Lead
                   <select
                     required
                     value={leadId}
                     onChange={(event) => setLeadId(event.target.value)}
-                    className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                    className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="" disabled>Selecione um lead</option>
                     {organizations.map((organization) => {
@@ -247,26 +247,26 @@ export function InboxPage() {
                     })}
                   </select>
                 </label>
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
+                <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
                   Canal
                   <select
                     value={channel}
                     onChange={(event) => setChannel(event.target.value as ConversationChannel)}
-                    className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                    className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {Object.entries(channelLabels).map(([value, label]) => (
                       <option key={value} value={value}>{label}</option>
                     ))}
                   </select>
                 </label>
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
+                <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
                   Assunto ou contexto
                   <input
                     maxLength={120}
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     placeholder={selectedLead ? `${selectedLead.company_name} · ${channelLabels[channel]}` : 'Ex.: Primeiro contato'}
-                    className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                    className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </label>
                 <div className="flex items-end gap-2">
@@ -277,9 +277,9 @@ export function InboxPage() {
                 </div>
               </form>
             ) : (
-              <p className="text-sm leading-6 text-slate-700">
+              <p className="text-sm leading-6 text-foreground">
                 Ainda não há leads para vincular.{' '}
-                <Link className="font-medium text-sky-800 underline underline-offset-4" to="/leads">Adicione ou importe leads</Link>
+                <Link className="font-medium text-primary underline underline-offset-4" to="/leads">Adicione ou importe leads</Link>
                 {' '}antes de iniciar uma conversa.
               </p>
             )}
@@ -293,19 +293,19 @@ export function InboxPage() {
             <CardHeader className="space-y-4 pb-3">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Inbox aria-hidden="true" className="h-4 w-4 text-sky-700" />
+                  <Inbox aria-hidden="true" className="h-4 w-4 text-primary" />
                   Conversas
                 </CardTitle>
-                <span className="text-xs tabular-nums text-slate-600">{filteredConversations.length} exibidas</span>
+                <span className="text-xs tabular-nums text-muted-foreground">{filteredConversations.length} exibidas</span>
               </div>
               <label className="relative block">
                 <span className="sr-only">Buscar conversa</span>
-                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Lead, assunto ou mensagem"
-                  className="h-10 w-full rounded-md border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                  className="h-10 w-full rounded-md border border-border bg-card pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </label>
               <div className="flex flex-wrap gap-2" aria-label="Filtrar conversas">
@@ -342,16 +342,16 @@ export function InboxPage() {
                           }}
                           aria-current={selected ? 'true' : undefined}
                           className={[
-                            'block w-full px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600',
-                            selected ? 'bg-sky-50' : 'hover:bg-slate-50',
+                            'block w-full px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                            selected ? 'bg-accent/50' : 'hover:bg-muted',
                           ].join(' ')}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-900">{conversation.lead_name}</p>
-                              <p className="mt-0.5 truncate text-xs text-slate-600">{conversation.title}</p>
+                              <p className="truncate text-sm font-semibold text-foreground">{conversation.lead_name}</p>
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">{conversation.title}</p>
                             </div>
-                            <time className="shrink-0 text-[11px] text-slate-600" dateTime={conversation.last_message_at ?? conversation.created_at}>
+                            <time className="shrink-0 text-[11px] text-muted-foreground" dateTime={conversation.last_message_at ?? conversation.created_at}>
                               {formatDate(conversation.last_message_at ?? conversation.created_at)}
                             </time>
                           </div>
@@ -361,13 +361,13 @@ export function InboxPage() {
                               {conversation.status === 'open' ? 'Aberta' : 'Arquivada'}
                             </Badge>
                             {conversation.last_message_direction ? (
-                              <span className="flex items-center gap-1 text-xs text-slate-600">
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <EntryIcon direction={conversation.last_message_direction} />
                                 {conversation.last_message_direction === 'inbound' ? 'Recebida' : 'Saída'}
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-700">
+                          <p className="mt-2 line-clamp-2 text-sm leading-5 text-foreground">
                             {conversation.last_message_excerpt ?? 'Conversa criada · registre a primeira mensagem.'}
                           </p>
                         </button>
@@ -377,11 +377,11 @@ export function InboxPage() {
                 </ul>
               ) : (
                 <div className="px-5 py-10 text-center">
-                  <Inbox aria-hidden="true" className="mx-auto h-8 w-8 text-slate-400" />
-                  <p className="mt-3 text-sm font-medium text-slate-800">
+                  <Inbox aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
+                  <p className="mt-3 text-sm font-medium text-foreground">
                     {conversations.length ? 'Nenhuma conversa corresponde ao filtro.' : 'Nenhuma conversa registrada'}
                   </p>
-                  <p className="mt-1 text-sm leading-5 text-slate-600">
+                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
                     {conversations.length ? 'Tente outra busca ou altere o filtro.' : 'Inicie uma conversa vinculada a um lead para manter o histórico em um só lugar.'}
                   </p>
                   {!conversations.length ? (
@@ -399,7 +399,7 @@ export function InboxPage() {
         <section className={!mobileThreadOpen ? 'hidden lg:block' : ''} aria-label="Conversa selecionada">
           {selectedConversation ? (
             <Card className="flex min-h-[38rem] flex-col">
-              <CardHeader className="border-b border-slate-200 pb-4">
+              <CardHeader className="border-b border-border pb-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-2">
                     <Button
@@ -417,17 +417,17 @@ export function InboxPage() {
                       {selectedConversation.lead_company_id ? (
                         <Link
                           to={`/companies/${selectedConversation.lead_company_id}`}
-                          className="mt-1 inline-block truncate text-sm text-sky-800 underline underline-offset-4"
+                          className="mt-1 inline-block truncate text-sm text-primary underline underline-offset-4"
                         >
                           {selectedConversation.lead_name}
                         </Link>
-                      ) : <p className="mt-1 truncate text-sm text-slate-700">{selectedConversation.lead_name}</p>}
+                      ) : <p className="mt-1 truncate text-sm text-foreground">{selectedConversation.lead_name}</p>}
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <Badge variant="outline">{channelLabels[selectedConversation.channel]}</Badge>
                         <Badge variant={selectedConversation.status === 'open' ? 'secondary' : 'outline'}>
                           {selectedConversation.status === 'open' ? 'Aberta' : 'Arquivada'}
                         </Badge>
-                        <span className="text-xs text-slate-600">{selectedConversation.organization_name}</span>
+                        <span className="text-xs text-muted-foreground">{selectedConversation.organization_name}</span>
                       </div>
                     </div>
                   </div>
@@ -449,10 +449,10 @@ export function InboxPage() {
               </CardHeader>
 
               <CardContent className="flex min-h-0 flex-1 flex-col p-0">
-                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-slate-50/60 p-4 sm:p-6" aria-live="polite">
-                  {messages.isLoading ? <p className="text-sm text-slate-600">Carregando mensagens…</p> : null}
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/60 p-4 sm:p-6" aria-live="polite">
+                  {messages.isLoading ? <p className="text-sm text-muted-foreground">Carregando mensagens…</p> : null}
                   {messages.isError ? (
-                    <Alert className="border-red-200 bg-red-50 text-red-900">
+                    <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
                       <div className="flex items-start justify-between gap-3">
                         <p>{messages.error.message}</p>
                         <Button type="button" variant="outline" size="sm" onClick={() => void messages.refetch()} aria-label="Tentar carregar mensagens novamente">
@@ -463,9 +463,9 @@ export function InboxPage() {
                   ) : null}
                   {!messages.isLoading && !messages.isError && !messages.data?.length ? (
                     <div className="mx-auto max-w-sm py-10 text-center">
-                      <Inbox aria-hidden="true" className="mx-auto h-8 w-8 text-slate-400" />
-                      <p className="mt-3 text-sm font-medium text-slate-800">Conversa sem mensagens</p>
-                      <p className="mt-1 text-sm leading-5 text-slate-600">Registre uma resposta recebida, uma mensagem enviada externamente ou prepare um rascunho.</p>
+                      <Inbox aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
+                      <p className="mt-3 text-sm font-medium text-foreground">Conversa sem mensagens</p>
+                      <p className="mt-1 text-sm leading-5 text-muted-foreground">Registre uma resposta recebida, uma mensagem enviada externamente ou prepare um rascunho.</p>
                     </div>
                   ) : null}
                   {messages.data?.map((message) => (
@@ -474,27 +474,27 @@ export function InboxPage() {
                       className={[
                         'max-w-[min(100%,42rem)] rounded-lg border px-4 py-3',
                         message.direction === 'inbound'
-                          ? 'mr-auto border-slate-200 bg-white'
-                          : 'ml-auto border-sky-200 bg-sky-50',
+                          ? 'mr-auto border-border bg-card'
+                          : 'ml-auto border-primary/30 bg-accent/50',
                         message.status === 'draft' ? 'border-dashed' : '',
                       ].join(' ')}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                        <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                           <EntryIcon direction={message.direction} />
                           {messageLabel(message.direction, message.status)}
                         </span>
-                        <time className="text-xs text-slate-600" dateTime={message.occurred_at}>
+                        <time className="text-xs text-muted-foreground" dateTime={message.occurred_at}>
                           {formatDate(message.occurred_at)}
                         </time>
                       </div>
-                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-900">{message.body}</p>
+                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-foreground">{message.body}</p>
                     </article>
                   ))}
                 </div>
 
                 <form
-                  className="space-y-3 border-t border-slate-200 bg-white p-4 sm:p-5"
+                  className="space-y-3 border-t border-border bg-card p-4 sm:p-5"
                   onSubmit={(event) => {
                     event.preventDefault()
                     if (!selectedConversation || !body.trim()) return
@@ -507,20 +507,20 @@ export function InboxPage() {
                   }}
                 >
                   {selectedConversation.status === 'archived' ? (
-                    <p className="text-sm text-slate-600">Esta conversa está arquivada. Reabra-a para adicionar registros.</p>
+                    <p className="text-sm text-muted-foreground">Esta conversa está arquivada. Reabra-a para adicionar registros.</p>
                   ) : (
                     <>
-                      <label className="flex max-w-md flex-col gap-1.5 text-sm font-medium text-slate-800">
+                      <label className="flex max-w-md flex-col gap-1.5 text-sm font-medium text-foreground">
                         Tipo de registro
                         <select
                           value={entryKind}
                           onChange={(event) => setEntryKind(event.target.value as 'inbound' | 'draft' | 'sent')}
-                          className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                          className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {entryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                         </select>
                       </label>
-                      <label className="block text-sm font-medium text-slate-800">
+                      <label className="block text-sm font-medium text-foreground">
                         Conteúdo
                         <textarea
                           value={body}
@@ -528,12 +528,12 @@ export function InboxPage() {
                           maxLength={10000}
                           rows={4}
                           placeholder="Registre o conteúdo necessário para manter o contexto da conversa."
-                          className="mt-1.5 min-h-24 w-full resize-y rounded-md border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                          className="mt-1.5 min-h-24 w-full resize-y rounded-md border border-border bg-card p-3 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-describedby="inbox-message-privacy"
                         />
                       </label>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <p id="inbox-message-privacy" className="max-w-xl text-xs leading-5 text-slate-600">
+                        <p id="inbox-message-privacy" className="max-w-xl text-xs leading-5 text-muted-foreground">
                           O conteúdo será salvo no Supabase da organização. Registre apenas o necessário; este texto não é enviado nem analisado por IA.
                         </p>
                         <Button type="submit" disabled={!body.trim() || addMessageMutation.isPending}>
@@ -549,15 +549,15 @@ export function InboxPage() {
           ) : (
             <Card className="flex min-h-[38rem] items-center justify-center">
               <CardContent className="max-w-sm py-12 text-center">
-                <Inbox aria-hidden="true" className="mx-auto h-9 w-9 text-slate-400" />
-                <h3 className="mt-3 font-semibold text-slate-900">Selecione uma conversa</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-600">Escolha uma conversa da lista ou inicie uma nova para registrar o histórico de contato.</p>
+                <Inbox aria-hidden="true" className="mx-auto h-9 w-9 text-muted-foreground" />
+                <h3 className="mt-3 font-semibold text-foreground">Selecione uma conversa</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">Escolha uma conversa da lista ou inicie uma nova para registrar o histórico de contato.</p>
               </CardContent>
             </Card>
           )}
         </section>
       </div>
-      <p className="text-xs leading-5 text-slate-600">
+      <p className="text-xs leading-5 text-muted-foreground">
         O Inbox mantém até 500 conversas mais recentes por consulta. A conexão com provedores e o envio automatizado não estão ativos.
       </p>
     </div>
