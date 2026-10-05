@@ -25,6 +25,7 @@ import {
 import { defaultActionScoreWeights, type ActionScoreWeights } from '../../services/ai/scoring'
 import { useAuth } from '../../hooks/useAuth'
 import { decideUserApproval, getPendingUsers } from '../../services/auth/userApprovalService'
+import { OrganizationMembersPanel } from './organization-members-panel'
 import { OrganizationManagementPanel } from './organization-management-panel'
 
 const LIST_FIELD_HINT = 'Separe os itens por vírgula ou linha.'
@@ -126,6 +127,7 @@ export function SettingsPage() {
 
       {user?.isPlatformAdmin ? <UserApprovalsCard /> : null}
       {user?.isPlatformAdmin ? <OrganizationManagementPanel /> : null}
+      <OrganizationMembersPanel />
 
       <Card>
         <CardHeader>

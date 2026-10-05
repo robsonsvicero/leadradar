@@ -24,3 +24,6 @@ verify_jwt = false
 
 [functions.admin-organizations]
 verify_jwt = true
+
+[functions.organization-members]
+verify_jwt = true

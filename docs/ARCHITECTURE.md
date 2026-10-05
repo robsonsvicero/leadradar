@@ -23,6 +23,10 @@ A prospecção é B2B: segmentos prioritários do ICP e segmentos atendidos por 
 
 O administrador da plataforma cadastra nome, endereço, e-mail do administrador e WhatsApp em Configurações. A Edge Function `admin-organizations` revalida o JWT e o perfil de administrador, cria a organização, convida o e-mail com Supabase Auth e associa o usuário como owner. Cadastros comuns não podem criar organizações por RPC ou diretamente via RLS. O convite redireciona para `/set-password`; o destinatário define sua própria senha e entra no workspace.
 
+Na mesma área de Configurações, `organization-members` permite ao administrador da plataforma vincular uma conta aprovada pelo e-mail a qualquer organização e definir `admin` ou `member`. Proprietários e administradores de uma organização podem convidar um e-mail; contas existentes são vinculadas e contas novas recebem convite Supabase Auth e vínculo automático como `member`. A função valida em cada chamada o administrador da plataforma ou a associação owner/admin à organização; membros comuns não podem convidar nem atribuir usuários.
+
+Em `/companies`, membros podem cadastrar empresas manualmente na organização a que pertencem. O cadastro não cria lead automaticamente; a criação e leitura continuam protegidas pelas policies RLS de `companies`.
+
   ## Inteligência comercial com IA
 
   ```text
