@@ -193,3 +193,15 @@ export async function setOrganizationServiceActive(organizationId: string, servi
   if (error) throw new Error(`Não foi possível atualizar o serviço: ${error.message}`)
   return data as OrganizationService
 }
+
+export async function deleteOrganizationService(organizationId: string, serviceId: string): Promise<void> {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('organization_services')
+    .delete()
+    .eq('id', serviceId)
+    .eq('organization_id', organizationId)
+    .select('id')
+  if (error) throw new Error(`Não foi possível excluir o serviço: ${error.message}`)
+  if (!data?.length) throw new Error('O serviço não foi encontrado ou você não tem permissão para excluí-lo.')
+}

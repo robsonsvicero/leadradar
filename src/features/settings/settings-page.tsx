@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, CircleAlert, Pencil, Plus, Save, ShieldCheck, ToggleLeft, ToggleRight, UserCheck, UserX, X } from 'lucide-react'
+import { Check, CircleAlert, Pencil, Plus, Save, ShieldCheck, ToggleLeft, ToggleRight, Trash2, UserCheck, UserX, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import { Alert } from '../../components/ui/alert'
@@ -9,6 +9,7 @@ import { Skeleton } from '../../components/ui/skeleton'
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
 import {
   createOrganization,
+  deleteOrganizationService,
   getAIConfigurationOrganizations,
   getOrganizationAISettings,
   saveOrganizationAIProfile,
@@ -451,6 +452,7 @@ function ServicesSettingsCard({
   const queryClient = useQueryClient()
   const [services, setServices] = useState(initial)
   const [form, setForm] = useState<ServiceFormState>(emptyServiceForm)
+  const [pendingDeletion, setPendingDeletion] = useState<OrganizationService | null>(null)
   const save = useMutation({
     mutationFn: () => saveOrganizationService(organizationId, serviceInput(form)),
     onSuccess: async (saved) => {
@@ -466,6 +468,16 @@ function ServicesSettingsCard({
     onSuccess: async (saved) => {
       setServices((current) => current.map((service) => service.id === saved.id ? saved : service))
       await queryClient.invalidateQueries({ queryKey: ['organization-ai-settings', organizationId] })
+    },
+  })
+  const remove = useMutation({
+    mutationFn: (serviceId: string) => deleteOrganizationService(organizationId, serviceId),
+    onSuccess: async (_deleted, serviceId) => {
+      setServices((current) => current.filter((service) => service.id !== serviceId))
+      setForm((current) => current.id === serviceId ? emptyServiceForm() : current)
+      setPendingDeletion(null)
+      await queryClient.invalidateQueries({ queryKey: ['organization-ai-settings', organizationId] })
+      await queryClient.invalidateQueries({ queryKey: ['ai-analysis'] })
     },
   })
 
@@ -531,6 +543,19 @@ function ServicesSettingsCard({
                     {service.active ? <ToggleLeft aria-hidden="true" className="h-4 w-4" /> : <ToggleRight aria-hidden="true" className="h-4 w-4" />}
                     {service.active ? 'Pausar' : 'Ativar'}
                   </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    aria-label={`Excluir serviço ${service.name}`}
+                    onClick={() => {
+                      remove.reset()
+                      setPendingDeletion(service)
+                    }}
+                  >
+                    <Trash2 aria-hidden="true" className="h-4 w-4" />
+                    Excluir
+                  </Button>
                 </div>
               </li>
             ))}
@@ -542,6 +567,49 @@ function ServicesSettingsCard({
         )}
         {toggle.error ? <SaveFeedback error={toggle.error.message} /> : null}
       </CardContent>
+      {pendingDeletion ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-service-title"
+            aria-describedby="delete-service-description"
+            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+          >
+            <h3 id="delete-service-title" className="text-lg font-semibold text-slate-900">Excluir este serviço?</h3>
+            <p id="delete-service-description" className="mt-2 text-sm leading-6 text-slate-600">
+              “{pendingDeletion.name}” será removido dos serviços oferecidos e deixará de ser considerado em novas recomendações. Esta ação não pode ser desfeita.
+            </p>
+            {remove.isError ? (
+              <Alert className="mt-4 border-red-200 bg-red-50 text-red-800">
+                {remove.error instanceof Error ? remove.error.message : 'Não foi possível excluir o serviço.'}
+              </Alert>
+            ) : null}
+            <div className="mt-6 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={remove.isPending}
+                onClick={() => {
+                  setPendingDeletion(null)
+                  remove.reset()
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={remove.isPending}
+                onClick={() => remove.mutate(pendingDeletion.id)}
+              >
+                <Trash2 aria-hidden="true" className="h-4 w-4" />
+                {remove.isPending ? 'Excluindo…' : 'Excluir serviço'}
+              </Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </Card>
   )
 }
