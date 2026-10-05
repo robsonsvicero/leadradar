@@ -82,7 +82,7 @@ export function NewProspectingPage() {
       <header>
         <h2 className="text-3xl font-semibold text-slate-900">Nova prospecção</h2>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Defina o perfil e a região para encontrar empresas e priorizar oportunidades comerciais.
+          Busque empresas e profissionais em um segmento B2B e região. A prospecção não procura consumidores finais.
         </p>
       </header>
 
@@ -132,7 +132,8 @@ export function NewProspectingPage() {
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="segment" className="text-sm font-medium text-slate-700">Segmento</label>
-                <Input id="segment" placeholder="Ex.: clínicas odontológicas" {...form.register('segment')} />
+                <Input id="segment" placeholder="Ex.: academias, clínicas ou empresas" {...form.register('segment')} />
+                <p className="text-xs text-slate-500">Informe o comprador B2B que deseja encontrar, não consumidores finais.</p>
                 {form.formState.errors.segment ? <p className="text-sm text-red-700">{form.formState.errors.segment.message}</p> : null}
               </div>
               <div className="space-y-2">

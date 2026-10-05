@@ -77,6 +77,9 @@ export type Lead = {
   prospecting_job_id?: string | null
   opportunity: string
   opportunity_reason: string
+  target_fit?: 'matched' | 'unconfirmed' | null
+  target_fit_reason?: string | null
+  matched_service?: string | null
   ai_summary: string
   recommended_service: string
   confidence: number

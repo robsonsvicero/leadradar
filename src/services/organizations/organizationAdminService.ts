@@ -1,3 +1,5 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
+
 import { supabase } from '../../lib/supabase/client'
 
 export type ManagedOrganization = {
@@ -17,10 +19,24 @@ function requireSupabase() {
   return supabase
 }
 
+export async function getEdgeFunctionErrorMessage(error: Error): Promise<string> {
+  if (error instanceof FunctionsHttpError) {
+    const response = error.context.clone()
+    const body: unknown = await response.json().catch(() => null)
+    if (body && typeof body === 'object' && 'error' in body && typeof body.error === 'string') {
+      return body.error
+    }
+  }
+
+  return error.message
+}
+
 export async function getManagedOrganizations(): Promise<ManagedOrganization[]> {
   const client = requireSupabase()
   const { data, error } = await client.functions.invoke('admin-organizations', { method: 'GET' })
-  if (error) throw new Error(`Não foi possível carregar as organizações: ${error.message}`)
+  if (error) {
+    throw new Error(`Não foi possível carregar as organizações: ${await getEdgeFunctionErrorMessage(error)}`)
+  }
   if (!Array.isArray(data?.organizations)) throw new Error('A resposta do serviço de organizações é inválida.')
   return data.organizations as ManagedOrganization[]
 }
@@ -35,7 +51,9 @@ export async function createManagedOrganization(input: CreateManagedOrganization
       whatsapp: input.whatsapp.trim(),
     },
   })
-  if (error) throw new Error(`Não foi possível cadastrar a organização: ${error.message}`)
+  if (error) {
+    throw new Error(`Não foi possível cadastrar a organização: ${await getEdgeFunctionErrorMessage(error)}`)
+  }
   if (!data?.organization) throw new Error('A organização foi processada, mas o serviço não confirmou o resultado.')
   return data.organization as ManagedOrganization
 }

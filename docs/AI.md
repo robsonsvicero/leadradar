@@ -24,6 +24,8 @@ As migrations criam tabelas de ICP, catálogo de serviços, voz da organização
 
 Owners e admins podem editar os serviços oferecidos, ICP (incluindo pesos do Action Score) e perfil de voz na tela **Configurações**. A IA usa somente serviços ativos e valida o nome recomendado contra o catálogo. O score mínimo é sinalizado na explicação, mas não exclui leads automaticamente. O porte desejado pode ser cadastrado como preferência, mas o produto não dispõe de uma fonte verificada para o porte de cada lead; por isso, esse critério não concede nem remove pontos do score.
 
+A prospecção usa os segmentos prioritários do ICP e os segmentos atendidos por serviços ativos para calcular aderência B2B com a categoria pública informada pelo Google Places. Cadastre compradores profissionais/empresariais, não consumidores finais. Esse ajuste é separado de oportunidades técnicas e não representa intenção de compra.
+
 ## Secrets e modelos
 
 Cadastre nos secrets de Edge Functions do mesmo projeto Supabase usado pelo frontend:

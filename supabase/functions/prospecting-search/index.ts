@@ -4,6 +4,7 @@ import { z } from 'https://esm.sh/zod@3'
 import { prospectingConfig } from '../../../src/config/prospecting.ts'
 import { extractPublicEmail } from '../../../src/services/prospecting/email.ts'
 import {
+  assessB2BTargetFit,
   calculateICPMatch,
   calculateLeadScore,
   calculateTechnicalScore,
@@ -14,6 +15,7 @@ import {
   normalizeDomain,
   normalizePhone,
   normalizeUrl,
+  matchesTargetLabel,
   type LeadSignal,
 } from '../../../src/services/prospecting/scoring.ts'
 
@@ -476,10 +478,10 @@ function opportunityFor(signals: LeadSignal[]) {
     }
   }
   return {
-    opportunity: 'Presença digital a avaliar',
-    opportunity_reason: 'A empresa foi encontrada no Google Places; os sinais disponíveis não apontaram um problema técnico prioritário.',
-    recommended_service: 'Avaliação de presença digital',
-    sales_argument: 'A empresa pode ser qualificada com uma análise comercial adicional.',
+    opportunity: 'Sem oportunidade técnica prioritária identificada',
+    opportunity_reason: 'Os dados públicos analisados não apontaram um problema técnico prioritário. Isso não confirma nem descarta uma oportunidade comercial.',
+    recommended_service: 'Nenhum serviço técnico específico sugerido',
+    sales_argument: 'Avalie a aderência ao perfil B2B e valide necessidades em uma conversa comercial, sem presumir intenção de compra.',
   }
 }
 
@@ -582,6 +584,29 @@ async function saveLead(
   companyId: string,
   analysis: DigitalAnalysis | null,
 ) {
+  const [icpResult, servicesResult] = await Promise.all([
+    admin.from('organization_icp_settings')
+      .select('target_segments, target_locations')
+      .eq('organization_id', job.organization_id)
+      .eq('active', true)
+      .maybeSingle(),
+    admin.from('organization_services')
+      .select('name, target_segments')
+      .eq('organization_id', job.organization_id)
+      .eq('active', true),
+  ])
+  if (icpResult.error) throw new Error(`Não foi possível carregar os segmentos do ICP: ${icpResult.error.message}`)
+  if (servicesResult.error) throw new Error(`Não foi possível carregar os segmentos dos serviços: ${servicesResult.error.message}`)
+
+  const targetFit = assessB2BTargetFit({
+    businessCategory: place.primaryTypeDisplayName?.text,
+    searchSegment: job.segment,
+    targetSegments: icpResult.data?.target_segments ?? [],
+    services: (servicesResult.data ?? []).map((service) => ({
+      name: service.name,
+      targetSegments: service.target_segments ?? [],
+    })),
+  })
   const signals = createSignals(place, analysis)
   const technical = calculateTechnicalScore({
     hasWebsite: Boolean(place.websiteUri),
@@ -593,8 +618,9 @@ async function saveLead(
     hasContactForm: analysis?.has_contact_form ?? null,
   })
   const icpMatch = calculateICPMatch({
-    segmentMatched: true,
-    locationMatched: true,
+    segmentMatched: targetFit.targetFit === 'matched',
+    locationMatched: !icpResult.data?.target_locations?.length
+      || icpResult.data.target_locations.some((location) => matchesTargetLabel(job.location, location)),
     rating: place.rating ?? null,
     reviewCount: place.userRatingCount ?? null,
   })
@@ -617,6 +643,9 @@ async function saveLead(
     opportunity_reason: opportunity.opportunity_reason || technical.reasons.join(' '),
     ai_summary: 'Pontuação determinística, sem geração por inteligência artificial.',
     recommended_service: opportunity.recommended_service,
+    target_fit: targetFit.targetFit,
+    target_fit_reason: targetFit.targetFitReason,
+    matched_service: targetFit.matchedService,
     sales_argument: opportunity.sales_argument,
     confidence: 85,
   }

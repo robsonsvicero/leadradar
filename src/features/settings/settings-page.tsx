@@ -361,7 +361,7 @@ function ICPSettingsCard({
     <Card>
       <CardHeader>
         <CardTitle>Perfil de cliente ideal (ICP)</CardTitle>
-        <CardDescription>Os critérios ajudam a qualificar oportunidades; não substituem dados ausentes da empresa.</CardDescription>
+        <CardDescription>Configure somente compradores B2B — empresas ou profissionais. Os critérios qualificam aderência, mas não provam intenção de compra.</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={onSubmit}>
@@ -371,7 +371,10 @@ function ICPSettingsCard({
           </div>
           <TextAreaField label="Descrição" value={form.description ?? ''} onChange={(value) => setForm((current) => ({ ...current, description: value || null }))} maxLength={800} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <ListField label="Segmentos prioritários" value={form.target_segments} onChange={(value) => setForm((current) => ({ ...current, target_segments: toList(value) }))} />
+            <div>
+              <ListField label="Segmentos prioritários (B2B)" value={form.target_segments} onChange={(value) => setForm((current) => ({ ...current, target_segments: toList(value) }))} />
+              <p className="mt-1 text-xs text-slate-500">Ex.: academias, clínicas ou empresas. Não informe consumidores finais.</p>
+            </div>
             <ListField label="Localizações prioritárias" value={form.target_locations} onChange={(value) => setForm((current) => ({ ...current, target_locations: toList(value) }))} />
             <ListField label="Porte desejado" value={form.target_company_sizes} onChange={(value) => setForm((current) => ({ ...current, target_company_sizes: toList(value) }))} />
             <ListField label="Serviços prioritários" value={form.preferred_services} onChange={(value) => setForm((current) => ({ ...current, preferred_services: toList(value) }))} />
@@ -473,7 +476,7 @@ function ServicesSettingsCard({
     <Card>
       <CardHeader>
         <CardTitle>Serviços oferecidos</CardTitle>
-        <CardDescription>A IA só recomendará serviços cadastrados e ativos nesta lista.</CardDescription>
+        <CardDescription>Cadastre em “Segmentos atendidos” as empresas ou profissionais B2B compatíveis com cada serviço. A aderência não representa intenção de compra.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <form className="space-y-4 rounded-lg bg-slate-50 p-4" onSubmit={onSubmit}>
@@ -488,7 +491,7 @@ function ServicesSettingsCard({
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField label="Nome do serviço" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} required maxLength={120} />
             <TextField label="Descrição" value={form.description} onChange={(description) => setForm((current) => ({ ...current, description }))} maxLength={500} />
-            <ListField label="Segmentos atendidos" value={toList(form.targetSegments)} onChange={(value) => setForm((current) => ({ ...current, targetSegments: value }))} />
+            <ListField label="Segmentos atendidos (B2B)" value={toList(form.targetSegments)} onChange={(value) => setForm((current) => ({ ...current, targetSegments: value }))} />
             <ListField label="Pontos de venda" value={toList(form.sellingPoints)} onChange={(value) => setForm((current) => ({ ...current, sellingPoints: value }))} />
           </div>
           <Button type="submit" disabled={save.isPending || !form.name.trim()}>

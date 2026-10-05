@@ -157,7 +157,20 @@ export function CompanyDetailPage() {
                 ) : <p className="mt-2 text-sm text-slate-500">A explicação do Action Score estará disponível após a análise comercial.</p>}
               </div>
               <div className="rounded-lg border border-slate-200 p-4">
+                <h3 className="font-semibold text-slate-900">Aderência ao perfil B2B</h3>
+                <p className="mt-2 text-sm text-slate-700">
+                  {lead.target_fit === 'matched'
+                    ? 'Compatível com o perfil-alvo configurado.'
+                    : 'A aderência ao perfil B2B não foi confirmada automaticamente.'}
+                  {lead.matched_service ? ` Serviço compatível: ${lead.matched_service}.` : ''}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {lead.target_fit_reason || 'Este lead ainda não tem cálculo de aderência B2B. O resultado será calculado em uma nova prospecção após a atualização do banco e da função.'}
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 p-4">
                 <h3 className="font-semibold text-slate-900">Sinais técnicos disponíveis</h3>
+                <p className="mt-2 text-sm font-medium text-slate-800">Oportunidade técnica: {lead.opportunity}</p>
                 <p className="mt-2 text-sm text-slate-600">{lead.opportunity_reason || 'Não há uma explicação técnica registrada para este lead.'}</p>
                 {lead.recommended_service ? <p className="mt-2 text-sm text-slate-700">Serviço sugerido pelo motor técnico: <strong>{lead.recommended_service}</strong></p> : null}
               </div>

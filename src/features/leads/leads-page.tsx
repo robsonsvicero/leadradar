@@ -271,7 +271,17 @@ export function LeadsPage() {
                         {lead.classification}
                       </Badge>
                     </TableCell>
-                    <TableCell>{lead.opportunity}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p>{lead.opportunity}</p>
+                        {lead.target_fit ? (
+                          <p className="text-xs text-slate-500">
+                            B2B: {lead.target_fit === 'matched' ? 'compatível' : 'não confirmado'}
+                            {lead.matched_service ? ` · ${lead.matched_service}` : ''}
+                          </p>
+                        ) : null}
+                      </div>
+                    </TableCell>
                     <TableCell>{lead.status}</TableCell>
                     <TableCell>{new Date(lead.created_at).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell className="text-right">

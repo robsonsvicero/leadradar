@@ -129,10 +129,10 @@ function createMockProspectingJob(input: ProspectingInput): ProspectingJob {
       ai_score: 0,
       action_score: 0,
       classification: 'warm',
-      opportunity: 'Presença digital a avaliar',
+      opportunity: 'Sem oportunidade técnica prioritária identificada',
       opportunity_reason: 'Resultado fictício para validar a interface; nenhuma empresa real foi consultada.',
       ai_summary: 'Registro de demonstração. Não representa uma empresa real.',
-      recommended_service: 'Análise de website',
+      recommended_service: 'Nenhum serviço técnico específico sugerido',
       confidence: 0.5,
     },
     {

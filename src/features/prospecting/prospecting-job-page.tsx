@@ -184,8 +184,19 @@ export function ProspectingJobPage() {
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h4 className="font-semibold text-slate-900">{lead.company_name}</h4>
-                  <p className="mt-1 text-sm text-slate-600">{lead.segment} · {lead.city} · {lead.opportunity}</p>
+                  <p className="mt-1 text-sm text-slate-600">{lead.segment} · {lead.city}</p>
+                  <p className="mt-1 text-sm text-slate-700"><strong>Oportunidade técnica:</strong> {lead.opportunity}</p>
                   <p className="mt-1 text-xs text-slate-500">{lead.opportunity_reason}</p>
+                  {lead.target_fit ? (
+                    <div className="mt-2">
+                      <p className="text-sm text-slate-700">
+                        <strong>Aderência B2B:</strong>{' '}
+                        {lead.target_fit === 'matched' ? 'Compatível com o perfil-alvo' : 'Não confirmada automaticamente'}
+                        {lead.matched_service ? ` · Serviço: ${lead.matched_service}` : ''}
+                      </p>
+                      {lead.target_fit_reason ? <p className="mt-1 text-xs text-slate-500">{lead.target_fit_reason}</p> : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-semibold text-slate-700">Score {lead.score}</span>

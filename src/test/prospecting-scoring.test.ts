@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  assessB2BTargetFit,
   calculateICPMatch,
   calculateLeadScore,
   calculateTechnicalScore,
   deduplicateCompanies,
   meetsProspectingQualityCriteria,
+  matchesTargetLabel,
   normalizeAddress,
   normalizeCompanyName,
   normalizeDomain,
@@ -58,6 +60,61 @@ describe('prospecting normalization and deduplication', () => {
 })
 
 describe('prospecting scores', () => {
+  it('matches accents and plural forms without matching generic service words', () => {
+    expect(matchesTargetLabel('Academia de ginástica', 'academias')).toBe(true)
+    expect(matchesTargetLabel('São Paulo, SP', 'São Paulo')).toBe(true)
+    expect(matchesTargetLabel('Serviços financeiros', 'serviços de saúde')).toBe(false)
+  })
+
+  it('matches a public business category to configured B2B segments and services', () => {
+    expect(assessB2BTargetFit({
+      businessCategory: 'Academia de ginástica',
+      searchSegment: 'academias',
+      targetSegments: ['academias'],
+      services: [{ name: 'Personal trainer corporativo', targetSegments: ['academias'] }],
+    })).toEqual({
+      targetFit: 'matched',
+      targetFitReason: 'O Google Places classificou a empresa como "Academia de ginástica", compatível com o segmento-alvo B2B "academias". Isso indica aderência ao perfil, não intenção de compra.',
+      matchedService: 'Personal trainer corporativo',
+    })
+  })
+
+  it('uses the selected B2B search segment when no ICP or service segments are configured', () => {
+    expect(assessB2BTargetFit({
+      businessCategory: 'Academia de ginástica',
+      searchSegment: 'academias',
+      targetSegments: [],
+      services: [],
+    })).toMatchObject({
+      targetFit: 'matched',
+      matchedService: null,
+    })
+  })
+
+  it('does not treat a search term as confirmed fit when the public category has no configured match', () => {
+    expect(assessB2BTargetFit({
+      businessCategory: 'Loja de roupas',
+      searchSegment: 'academias',
+      targetSegments: ['academias'],
+      services: [{ name: 'Personal trainer corporativo', targetSegments: ['academias'] }],
+    })).toMatchObject({
+      targetFit: 'unconfirmed',
+      matchedService: null,
+    })
+  })
+
+  it('does not confirm target fit when Places provides no business category', () => {
+    expect(assessB2BTargetFit({
+      businessCategory: null,
+      searchSegment: 'academias',
+      targetSegments: ['academias'],
+      services: [{ name: 'Personal trainer corporativo', targetSegments: ['academias'] }],
+    })).toMatchObject({
+      targetFit: 'unconfirmed',
+      matchedService: null,
+    })
+  })
+
   it('requires a rating of at least 4.0 and between 20 and 350 reviews', () => {
     expect(meetsProspectingQualityCriteria({ rating: 4, reviewCount: 20 })).toBe(true)
     expect(meetsProspectingQualityCriteria({ rating: 5, reviewCount: 350 })).toBe(true)

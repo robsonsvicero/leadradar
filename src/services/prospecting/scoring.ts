@@ -25,6 +25,74 @@ export type LeadSignal = {
   confidence: number
 }
 
+export type B2BTargetFit = {
+  targetFit: 'matched' | 'unconfirmed'
+  targetFitReason: string
+  matchedService: string | null
+}
+
+export function matchesTargetLabel(left: string, right: string) {
+  const normalizedLeft = normalizeCompanyName(left)
+  const normalizedRight = normalizeCompanyName(right)
+  if (!normalizedLeft || !normalizedRight) return false
+  if (normalizedLeft === normalizedRight) return true
+
+  const ignoredWords = new Set(['da', 'das', 'de', 'do', 'dos', 'e', 'empresa', 'empresas', 'servico', 'servicos'])
+  const words = (value: string) => value.split(' ')
+    .filter((word) => !ignoredWords.has(word))
+    .map((word) => word.length > 4 ? word.replace(/s$/, '') : word)
+  const rightWords = new Set(words(normalizedRight))
+  return words(normalizedLeft).some((word) => word.length > 3 && rightWords.has(word))
+}
+
+export function assessB2BTargetFit(input: {
+  businessCategory: string | null | undefined
+  searchSegment: string
+  targetSegments: string[]
+  services: Array<{ name: string; targetSegments: string[] }>
+}): B2BTargetFit {
+  const category = normalizeCompanyName(input.businessCategory ?? '')
+  const configuredSegments = [...new Set([
+    ...input.targetSegments,
+    ...input.services.flatMap((service) => service.targetSegments),
+  ])]
+  const targetSegments = configuredSegments.length ? configuredSegments : [input.searchSegment]
+  const matchedSegment = category ? targetSegments.find((segment) => matchesTargetLabel(category, segment)) : undefined
+  const matchedService = input.services.find((service) =>
+    service.targetSegments.some((segment) => category && matchesTargetLabel(category, segment)),
+  )?.name ?? null
+
+  if (matchedSegment && category) {
+    return {
+      targetFit: 'matched',
+      targetFitReason: `O Google Places classificou a empresa como "${input.businessCategory}", compatível com o segmento-alvo B2B "${matchedSegment}". Isso indica aderência ao perfil, não intenção de compra.`,
+      matchedService,
+    }
+  }
+
+  if (!category) {
+    return {
+      targetFit: 'unconfirmed',
+      targetFitReason: `A empresa foi encontrada pela busca "${input.searchSegment}", mas o Google Places não informou uma categoria pública para confirmar a aderência ao perfil B2B.`,
+      matchedService: null,
+    }
+  }
+
+  if (configuredSegments.length) {
+    return {
+      targetFit: 'unconfirmed',
+      targetFitReason: `A categoria pública "${input.businessCategory}" não teve correspondência textual com os segmentos B2B configurados (${configuredSegments.join(', ')}). A aderência não foi confirmada automaticamente; revise manualmente.`,
+      matchedService: null,
+    }
+  }
+
+  return {
+    targetFit: 'unconfirmed',
+    targetFitReason: `A categoria pública "${input.businessCategory}" não confirma o segmento pesquisado "${input.searchSegment}". Configure os segmentos B2B desejados no ICP ou nos serviços para qualificar melhor os resultados.`,
+    matchedService: null,
+  }
+}
+
 export const leadScoreThresholds = {
   hot: 80,
   warm: 40,

@@ -22,6 +22,7 @@
 16. `20261005110000_company_public_email.sql`
 17. `20261005120000_lead_deletion_support.sql`
 18. `20261005130000_organization_admin_invites.sql`
+19. `20261005140000_b2b_target_fit.sql`
 
 Nunca editar migration já aplicada. Crie uma migration posterior para corrigir schema/dados.
 
@@ -34,6 +35,8 @@ A migration de production foundations revoga criação direta de organizações,
 A migration de workers retomáveis persiste os dados de descoberta por empresa, adiciona leases e a RPC `claim_prospecting_job`. A função `prospecting-search` deve ser deployada somente depois dessa migration. Cada invocação processa uma consulta ou uma empresa e agenda a próxima etapa; a página retoma jobs ativos quando o lease expira. Validar o encadeamento em staging antes de atualizar produção.
 
 A migration de convites administrativos acrescenta endereço e contatos às organizações e restringe a criação via banco ao administrador da plataforma. Ela deve ser aplicada antes do deploy da Edge Function `admin-organizations`. A função usa a service role para convidar o contato e associá-lo como `owner`; não remova as restrições de membership da migration de production foundations.
+
+A migration `20261005140000_b2b_target_fit.sql` adiciona ao lead o resultado separado de aderência a segmentos B2B e o serviço compatível. A função `prospecting-search` consulta os segmentos do ICP e dos serviços ativos para preencher esses campos; aplique a migration antes de publicar a versão atualizada da função.
 
 **Exceção operacional em 04/10/2026:** por autorização explícita, a migration `20261004260000` foi executada diretamente no projeto de produção via Management API e registrada como aplicada. O CLI continua sem versões remotas `20261004130000`–`20261004250000`; o histórico legado precisa ser reconciliado antes de qualquer `supabase db push`. Não use `db push` para promover alterações até reconciliar cada versão com o schema real.
 

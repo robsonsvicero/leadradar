@@ -17,6 +17,8 @@ O cliente nunca envia ou recebe a chave do Google. A Edge Function valida o JWT,
 
 O analisador salva o primeiro endereço de e-mail público encontrado no HTML do website da empresa. A lista de leads o apresenta como link de e-mail; endereços não são inferidos quando não aparecem na página analisada.
 
+A prospecção é B2B: segmentos prioritários do ICP e segmentos atendidos por serviços ativos descrevem empresas/profissionais compradores. Cada lead mantém separados a oportunidade técnica (evidências do site) e o ajuste ao alvo B2B (categoria pública do Google Places comparada à configuração); ajuste não implica intenção de compra. O ICP Match usa esses resultados e as localizações configuradas, em vez de considerar todos os leads automaticamente aderentes.
+
 ## Cadastro administrativo de organizações
 
 O administrador da plataforma cadastra nome, endereço, e-mail do administrador e WhatsApp em Configurações. A Edge Function `admin-organizations` revalida o JWT e o perfil de administrador, cria a organização, convida o e-mail com Supabase Auth e associa o usuário como owner. Cadastros comuns não podem criar organizações por RPC ou diretamente via RLS. O convite redireciona para `/set-password`; o destinatário define sua própria senha e entra no workspace.
