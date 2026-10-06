@@ -4,11 +4,14 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LeadsPage } from '../features/leads/leads-page'
-import { deleteLeads, getLeads, type LeadWithCompanyEmail } from '../services/leads/leadService'
+import { deleteLeads, getLeads, updateLeadOpportunity, type LeadWithCompanyEmail } from '../services/leads/leadService'
 
 vi.mock('../services/leads/leadService', () => ({
   deleteLeads: vi.fn(),
+  getLeadOpportunityText: (item: { opportunity: string; opportunity_override?: string | null }) =>
+    item.opportunity_override?.trim() || item.opportunity,
   getLeads: vi.fn(),
+  updateLeadOpportunity: vi.fn(),
 }))
 
 const lead = {
@@ -45,6 +48,7 @@ describe('leads page contact email', () => {
   beforeEach(() => {
     vi.mocked(deleteLeads).mockResolvedValue()
     vi.mocked(getLeads).mockResolvedValue([lead])
+    vi.mocked(updateLeadOpportunity).mockResolvedValue(lead)
   })
 
   function renderLeadsPage() {
@@ -110,6 +114,32 @@ describe('leads page contact email', () => {
       fireEvent.click(sortButton)
       expect(sortButton.closest('th')).toHaveAttribute('aria-sort', 'descending')
     }
+  })
+
+  it('lets the user edit the opportunity and save a persistent override', async () => {
+    renderLeadsPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar oportunidade de Empresa Exemplo' }))
+    const editor = screen.getByRole('textbox', { name: 'Oportunidade de Empresa Exemplo' })
+    expect(editor).toHaveValue('Site desatualizado')
+    fireEvent.change(editor, { target: { value: 'O site possui chamadas para ação claras.' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => {
+      expect(updateLeadOpportunity).toHaveBeenCalledWith('lead-1', 'O site possui chamadas para ação claras.')
+      expect(screen.queryByRole('textbox', { name: 'Oportunidade de Empresa Exemplo' })).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows the saved user version instead of the generated opportunity', async () => {
+    vi.mocked(getLeads).mockResolvedValue([
+      { ...lead, opportunity_override: 'O site possui várias chamadas para ação.' },
+    ])
+
+    renderLeadsPage()
+
+    expect(await screen.findByText('O site possui várias chamadas para ação.')).toBeInTheDocument()
+    expect(screen.getByText('Personalizada por você')).toBeInTheDocument()
   })
 
   it('requires confirmation before deleting one lead', async () => {

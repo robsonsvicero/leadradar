@@ -27,6 +27,7 @@ import {
   type WorkspaceRecommendation,
   type WorkspaceTask,
 } from '../../services/ai/aiSdrWorkspaceService'
+import { getLeadOpportunityText } from '../../services/leads/leadService'
 import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 const channelLabels = {
@@ -340,7 +341,7 @@ export function AISDRPage() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{[getSegmentLabel(lead.segment), lead.city].filter(Boolean).join(' · ') || 'Não informado'}</td>
                     <td className="px-4 py-3"><span className="font-semibold tabular-nums text-foreground">{lead.action_score}/100</span></td>
-                    <td className="max-w-sm px-4 py-3 text-muted-foreground">{lead.opportunity || 'Oportunidade não informada'}</td>
+                    <td className="max-w-sm px-4 py-3 text-muted-foreground">{getLeadOpportunityText(lead) || 'Oportunidade não informada'}</td>
                     <td className="px-4 py-3">
                       <Link aria-label={`Abrir ${lead.company_name}`} to={companyPath(lead.company_id)} className="inline-flex rounded p-1 text-primary hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         <ExternalLink aria-hidden="true" className="h-4 w-4" />

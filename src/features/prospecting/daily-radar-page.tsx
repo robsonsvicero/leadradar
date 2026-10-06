@@ -10,6 +10,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
 import { leadScoreThresholds } from '../../services/prospecting/scoring'
 import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
+import { getLeadOpportunityText } from '../../services/leads/leadService'
 import {
   getDailyRadarSnapshot,
   type DailyRadarLead,
@@ -438,8 +439,8 @@ function DailyOpportunityCard({ lead }: { lead: DailyRadarLead }) {
 
         <div className="mt-2 rounded-lg bg-muted/80 px-2.5 py-2">
           <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Oportunidade</p>
-          <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-foreground">{lead.opportunity || 'Oportunidade a avaliar'}</p>
-          {lead.opportunity_reason ? <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{lead.opportunity_reason}</p> : null}
+          <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-foreground">{getLeadOpportunityText(lead) || 'Oportunidade a avaliar'}</p>
+          {lead.opportunity_reason && !lead.opportunity_override ? <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{lead.opportunity_reason}</p> : null}
         </div>
 
         <div className="mt-auto grid grid-cols-2 gap-1.5 pt-2">

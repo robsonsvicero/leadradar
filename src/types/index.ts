@@ -77,6 +77,7 @@ export type Lead = {
   source?: string | null
   prospecting_job_id?: string | null
   opportunity: string
+  opportunity_override?: string | null
   opportunity_reason: string
   target_fit?: 'matched' | 'unconfirmed' | null
   target_fit_reason?: string | null

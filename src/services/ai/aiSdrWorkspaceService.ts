@@ -19,6 +19,7 @@ type WorkspaceLead = Pick<
   | 'action_score'
   | 'technical_score'
   | 'opportunity'
+  | 'opportunity_override'
   | 'ai_updated_at'
   | 'created_at'
 >
@@ -99,6 +100,7 @@ function mapDemoLeads(leads: Lead[]): WorkspaceLead[] {
     action_score: lead.action_score,
     technical_score: lead.technical_score,
     opportunity: lead.opportunity,
+    opportunity_override: lead.opportunity_override ?? null,
     ai_updated_at: lead.ai_updated_at ?? null,
     created_at: lead.created_at,
   }))
@@ -148,7 +150,7 @@ export async function getAISDRWorkspaceData(): Promise<AISDRWorkspaceData> {
 
   const [leadsResult, tasksResult, followUpCountResult, draftsResult, analysisResult] = await Promise.all([
     supabase.from('leads')
-      .select('id,organization_id,company_id,company_name,city,segment,classification,status,action_score,technical_score,opportunity,ai_updated_at,created_at')
+      .select('id,organization_id,company_id,company_name,city,segment,classification,status,action_score,technical_score,opportunity,opportunity_override,ai_updated_at,created_at')
       .in('organization_id', organizationIds)
       .order('action_score', { ascending: false })
       .limit(200),

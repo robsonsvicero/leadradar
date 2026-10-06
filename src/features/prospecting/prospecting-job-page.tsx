@@ -10,6 +10,7 @@ import { Progress } from '../../components/ui/progress'
 import { Skeleton } from '../../components/ui/skeleton'
 import { prospectingConfig } from '../../config/prospecting'
 import { getClassificationLabel, getSegmentLabel } from '../../services/prospecting/prospectingLabels'
+import { getLeadOpportunityText } from '../../services/leads/leadService'
 import {
   cancelProspectingJob,
   getProspectingJob,
@@ -186,7 +187,7 @@ export function ProspectingJobPage() {
                 <div>
                   <h4 className="font-semibold text-foreground">{lead.company_name}</h4>
                   <p className="mt-1 text-sm text-muted-foreground">{getSegmentLabel(lead.segment)} · {lead.city}</p>
-                  <p className="mt-1 text-sm text-foreground"><strong>Oportunidade técnica:</strong> {lead.opportunity}</p>
+                  <p className="mt-1 text-sm text-foreground"><strong>Oportunidade:</strong> {getLeadOpportunityText(lead)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{lead.opportunity_reason}</p>
                   {lead.target_fit ? (
                     <div className="mt-2">

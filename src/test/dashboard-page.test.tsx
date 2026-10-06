@@ -7,6 +7,8 @@ import { DashboardPage } from '../features/dashboard/dashboard-page'
 import { getLeads, type LeadWithCompanyEmail } from '../services/leads/leadService'
 
 vi.mock('../services/leads/leadService', () => ({
+  getLeadOpportunityText: (lead: { opportunity: string; opportunity_override?: string | null }) =>
+    lead.opportunity_override?.trim() || lead.opportunity,
   getLeads: vi.fn(),
 }))
 

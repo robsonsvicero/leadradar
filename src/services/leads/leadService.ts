@@ -12,6 +12,10 @@ type LeadWithCompanyRelation = Lead & {
 
 const emptyLeads: LeadWithCompanyEmail[] = []
 
+export function getLeadOpportunityText(lead: Pick<Lead, 'opportunity' | 'opportunity_override'>) {
+  return lead.opportunity_override?.trim() || lead.opportunity
+}
+
 function mapLeadWithCompanyEmail(row: LeadWithCompanyRelation): LeadWithCompanyEmail {
   const { companies, ...lead } = row
   return { ...lead, company_email: companies?.email ?? null }
@@ -75,6 +79,31 @@ export async function updateLeadStatus(id: string, status: string) {
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(nextLeads))
   return nextLeads.find((lead) => lead.id === id) ?? null
+}
+
+export async function updateLeadOpportunity(id: string, opportunityOverride: string | null): Promise<Lead> {
+  const normalizedOverride = opportunityOverride?.trim() || null
+  if (supabase && !prospectingMockMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .update({ opportunity_override: normalizedOverride, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw new Error(`Não foi possível atualizar a oportunidade: ${error.message}`)
+    return data as Lead
+  }
+
+  const leads = await getLeads()
+  const targetExists = leads.some((lead) => lead.id === id)
+  if (!targetExists) throw new Error('Lead não encontrado. Atualize a lista e tente novamente.')
+  const updatedLeads = leads.map((lead) => lead.id === id
+    ? { ...lead, opportunity_override: normalizedOverride, updated_at: new Date().toISOString() }
+    : lead)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLeads))
+  const updatedLead = updatedLeads.find((lead) => lead.id === id)
+  if (!updatedLead) throw new Error('Não foi possível recuperar o lead atualizado.')
+  return updatedLead
 }
 
 export async function deleteLeads(ids: string[]): Promise<void> {

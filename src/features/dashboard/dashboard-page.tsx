@@ -21,7 +21,7 @@ import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
-import { getLeads, type LeadWithCompanyEmail } from '../../services/leads/leadService'
+import { getLeadOpportunityText, getLeads, type LeadWithCompanyEmail } from '../../services/leads/leadService'
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
 import { getClassificationLabel, getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
@@ -46,8 +46,8 @@ function downloadLeadsCsv(leads: LeadWithCompanyEmail[]) {
     { label: 'Score', value: (lead) => lead.score },
     { label: 'Classificação', value: (lead) => getClassificationLabel(lead.classification) },
     { label: 'Status', value: (lead) => lead.status },
-    { label: 'Oportunidade', value: (lead) => lead.opportunity },
-    { label: 'Motivo da oportunidade', value: (lead) => lead.opportunity_reason },
+    { label: 'Oportunidade', value: getLeadOpportunityText },
+    { label: 'Motivo da análise automática', value: (lead) => lead.opportunity_reason },
   ]
   const escapeCsv = (value: string | number | null | undefined) => {
     const text = String(value ?? '').replace(/^[=+\-@\t\r]/, "'$&")
@@ -273,8 +273,8 @@ function OpportunityCard({ lead }: { lead: LeadWithCompanyEmail }) {
 
         <div className="mt-2 rounded-lg bg-muted/80 px-2.5 py-2">
           <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Oportunidade</p>
-          <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-foreground">{lead.opportunity || 'Oportunidade a avaliar'}</p>
-          {lead.opportunity_reason ? <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{lead.opportunity_reason}</p> : null}
+          <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-foreground">{getLeadOpportunityText(lead) || 'Oportunidade a avaliar'}</p>
+          {lead.opportunity_reason && !lead.opportunity_override ? <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{lead.opportunity_reason}</p> : null}
         </div>
 
         <div className="mt-auto grid grid-cols-2 gap-1.5 pt-2">

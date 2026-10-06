@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Mail, Search, Star, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Mail, Pencil, Search, Star, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -11,7 +11,7 @@ import { Input } from '../../components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Skeleton } from '../../components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
-import { deleteLeads, getLeads, type LeadWithCompanyEmail } from '../../services/leads/leadService'
+import { deleteLeads, getLeadOpportunityText, getLeads, updateLeadOpportunity, type LeadWithCompanyEmail } from '../../services/leads/leadService'
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
 import { getClassificationLabel, getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
@@ -43,6 +43,8 @@ export function LeadsPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(() => new Set())
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
+  const [editingOpportunityLeadId, setEditingOpportunityLeadId] = useState<string | null>(null)
+  const [opportunityDraft, setOpportunityDraft] = useState('')
   const today = new Date()
   const currentDay = today.getDate()
   const currentMonth = today.getMonth()
@@ -64,6 +66,15 @@ export function LeadsPage() {
           queryClient.removeQueries({ queryKey: ['lead-activities', leadId] }),
         ]),
       ])
+    },
+  })
+  const opportunityMutation = useMutation({
+    mutationFn: ({ leadId, opportunityOverride }: { leadId: string; opportunityOverride: string | null }) =>
+      updateLeadOpportunity(leadId, opportunityOverride),
+    onSuccess: async () => {
+      setEditingOpportunityLeadId(null)
+      setOpportunityDraft('')
+      await queryClient.invalidateQueries()
     },
   })
 
@@ -91,7 +102,7 @@ export function LeadsPage() {
           comparison = getClassificationLabel(first.classification).localeCompare(getClassificationLabel(second.classification), 'pt-BR')
           break
         case 'opportunity':
-          comparison = first.opportunity.localeCompare(second.opportunity, 'pt-BR')
+          comparison = getLeadOpportunityText(first).localeCompare(getLeadOpportunityText(second), 'pt-BR')
           break
         case 'status':
           comparison = Number(isLeadNewToday(first.created_at, currentYear, currentMonth, currentDay))
@@ -156,6 +167,12 @@ export function LeadsPage() {
       ids,
       companyNames: ids.map((id) => leads.find((lead) => lead.id === id)?.company_name ?? 'Lead'),
     })
+  }
+
+  const startEditingOpportunity = (lead: LeadWithCompanyEmail) => {
+    opportunityMutation.reset()
+    setOpportunityDraft(getLeadOpportunityText(lead))
+    setEditingOpportunityLeadId(lead.id)
   }
 
   if (leadsQuery.isLoading) {
@@ -357,15 +374,83 @@ export function LeadsPage() {
                         {getClassificationLabel(lead.classification)}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-64">
                       <div className="space-y-1">
-                        <p>{lead.opportunity}</p>
+                        <p className="whitespace-pre-line break-words">{getLeadOpportunityText(lead)}</p>
+                        {lead.opportunity_override ? (
+                          <p className="text-xs text-primary">Personalizada por você</p>
+                        ) : null}
                         {lead.target_fit ? (
                           <p className="text-xs text-muted-foreground">
                             B2B: {lead.target_fit === 'matched' ? 'compatível' : 'não confirmado'}
                             {lead.matched_service ? ` · ${lead.matched_service}` : ''}
                           </p>
                         ) : null}
+                        {editingOpportunityLeadId === lead.id ? (
+                          <form
+                            className="space-y-2 pt-2"
+                            onSubmit={(event) => {
+                              event.preventDefault()
+                              opportunityMutation.mutate({
+                                leadId: lead.id,
+                                opportunityOverride: opportunityDraft.trim() || null,
+                              })
+                            }}
+                          >
+                            <label htmlFor={`opportunity-${lead.id}`} className="sr-only">
+                              Oportunidade de {lead.company_name}
+                            </label>
+                            <textarea
+                              id={`opportunity-${lead.id}`}
+                              value={opportunityDraft}
+                              onChange={(event) => setOpportunityDraft(event.target.value)}
+                              rows={3}
+                              aria-describedby={`opportunity-help-${lead.id}`}
+                              className="w-full min-w-56 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                            />
+                            <p id={`opportunity-help-${lead.id}`} className="text-xs text-muted-foreground">
+                              Seu texto prevalece sobre a análise automática. Deixe em branco para restaurar a sugestão.
+                            </p>
+                            {opportunityMutation.isError ? (
+                              <Alert role="alert" className="border-destructive/30 bg-destructive/10 text-destructive">
+                                {opportunityMutation.error instanceof Error
+                                  ? opportunityMutation.error.message
+                                  : 'Não foi possível salvar a oportunidade.'}
+                              </Alert>
+                            ) : null}
+                            <div className="flex flex-wrap gap-2">
+                              <Button type="submit" size="sm" disabled={opportunityMutation.isPending}>
+                                {opportunityMutation.isPending ? 'Salvando…' : 'Salvar'}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                disabled={opportunityMutation.isPending}
+                                onClick={() => {
+                                  setEditingOpportunityLeadId(null)
+                                  setOpportunityDraft('')
+                                  opportunityMutation.reset()
+                                }}
+                              >
+                                Cancelar
+                              </Button>
+                            </div>
+                          </form>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Editar oportunidade de ${lead.company_name}`}
+                            disabled={opportunityMutation.isPending}
+                            onClick={() => startEditingOpportunity(lead)}
+                            className="h-7 px-2 text-xs"
+                          >
+                            <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
+                            Editar oportunidade
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>

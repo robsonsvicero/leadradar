@@ -259,7 +259,7 @@ function addFact(facts: EvidenceFact[], id: string, value: unknown) {
 
 async function collectContext(admin: SupabaseClient, userClient: SupabaseClient, userId: string, leadId: string): Promise<LeadAIContext> {
   const { data: lead, error: leadError } = await admin.from('leads')
-    .select('id,organization_id,company_id,company_name,city,segment,score,technical_score,icp_match,classification,opportunity,recommended_service')
+    .select('id,organization_id,company_id,company_name,city,segment,score,technical_score,icp_match,classification,opportunity,opportunity_override,recommended_service')
     .eq('id', leadId)
     .maybeSingle()
   if (leadError) throw new AIRequestError('Não foi possível carregar o lead.', 500, 'LEAD_READ_FAILED')
@@ -378,7 +378,7 @@ async function collectContext(admin: SupabaseClient, userClient: SupabaseClient,
       technicalScore: clampScore(lead.technical_score),
       icpMatch: clampScore(lead.icp_match),
       classification: lead.classification,
-      opportunity: safeText(lead.opportunity, 160),
+      opportunity: safeText(lead.opportunity_override || lead.opportunity, 160),
     },
     company: {
       name,

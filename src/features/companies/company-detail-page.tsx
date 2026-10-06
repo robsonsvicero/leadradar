@@ -14,7 +14,7 @@ import { LeadActivityTimeline } from './lead-activity-timeline'
 import { useAIFeedback, useLeadFollowUp, useLeadIntelligence, useLeadOutreach } from '../../hooks/useLeadAI'
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
 import { getCompanyById } from '../../services/companies/companyService'
-import { getLeadByCompanyId } from '../../services/leads/leadService'
+import { getLeadByCompanyId, getLeadOpportunityText } from '../../services/leads/leadService'
 import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 const channelLabels = {
@@ -171,8 +171,11 @@ export function CompanyDetailPage() {
               </div>
               <div className="rounded-lg border border-border p-4">
                 <h3 className="font-semibold text-foreground">Sinais técnicos disponíveis</h3>
-                <p className="mt-2 text-sm font-medium text-foreground">Oportunidade técnica: {lead.opportunity}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{lead.opportunity_reason || 'Não há uma explicação técnica registrada para este lead.'}</p>
+                <p className="mt-2 text-sm font-medium text-foreground">Oportunidade: {getLeadOpportunityText(lead)}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {lead.opportunity_reason || 'Não há uma explicação técnica registrada para este lead.'}
+                  {lead.opportunity_override ? ' · A oportunidade exibida foi ajustada manualmente.' : ''}
+                </p>
                 {lead.recommended_service ? <p className="mt-2 text-sm text-foreground">Serviço sugerido pelo motor técnico: <strong>{lead.recommended_service}</strong></p> : null}
               </div>
 
