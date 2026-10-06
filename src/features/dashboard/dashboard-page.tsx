@@ -23,6 +23,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
 import { getLeads, type LeadWithCompanyEmail } from '../../services/leads/leadService'
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
+import { getClassificationLabel, getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 const contactedStatuses = new Set(['contacted', 'replied', 'meeting', 'proposal', 'negotiation', 'won', 'lost'])
 const numberFormatter = new Intl.NumberFormat('pt-BR')
@@ -39,11 +40,11 @@ function isToday(value: string): boolean {
 function downloadLeadsCsv(leads: LeadWithCompanyEmail[]) {
   const columns: Array<{ label: string; value: (lead: LeadWithCompanyEmail) => string | number | null | undefined }> = [
     { label: 'Empresa', value: (lead) => lead.company_name },
-    { label: 'Segmento', value: (lead) => lead.segment },
+    { label: 'Segmento', value: (lead) => getSegmentLabel(lead.segment) },
     { label: 'Cidade', value: (lead) => lead.city },
     { label: 'E-mail', value: (lead) => lead.company_email },
     { label: 'Score', value: (lead) => lead.score },
-    { label: 'Classificação', value: (lead) => lead.classification },
+    { label: 'Classificação', value: (lead) => getClassificationLabel(lead.classification) },
     { label: 'Status', value: (lead) => lead.status },
     { label: 'Oportunidade', value: (lead) => lead.opportunity },
     { label: 'Motivo da oportunidade', value: (lead) => lead.opportunity_reason },
@@ -242,7 +243,7 @@ function OpportunityCard({ lead }: { lead: LeadWithCompanyEmail }) {
             >
               {lead.company_name}
             </Link>
-            <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{lead.segment}</p>
+            <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{getSegmentLabel(lead.segment)}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className={`grid h-9 w-9 place-items-center rounded-full border-2 text-[11px] font-bold tabular-nums ${scoreTone}`} aria-label={`Score ${lead.score} de 100`}>

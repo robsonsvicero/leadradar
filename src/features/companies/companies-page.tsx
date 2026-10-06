@@ -11,6 +11,7 @@ import { Input } from '../../components/ui/input'
 import { Skeleton } from '../../components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { createCompany, getCompanies, getCompanyOrganizations } from '../../services/companies/companyService'
+import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 type CompanyForm = {
   organization_id: string
@@ -248,7 +249,7 @@ export function CompaniesPage() {
                         {company.name}
                       </Link>
                     </TableCell>
-                    <TableCell>{company.category}</TableCell>
+                    <TableCell>{getSegmentLabel(company.category)}</TableCell>
                     <TableCell>
                       <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />

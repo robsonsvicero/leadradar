@@ -13,6 +13,7 @@ import { Skeleton } from '../../components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { deleteLeads, getLeads, type LeadWithCompanyEmail } from '../../services/leads/leadService'
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
+import { getClassificationLabel, getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 const emptyLeads: LeadWithCompanyEmail[] = []
 
@@ -169,9 +170,9 @@ export function LeadsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                <SelectItem value="hot">Hot</SelectItem>
-                <SelectItem value="warm">Warm</SelectItem>
-                <SelectItem value="cold">Cold</SelectItem>
+                <SelectItem value="hot">Quente</SelectItem>
+                <SelectItem value="warm">Morno</SelectItem>
+                <SelectItem value="cold">Frio</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -264,11 +265,11 @@ export function LeadsPage() {
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell>{lead.segment}</TableCell>
+                    <TableCell>{getSegmentLabel(lead.segment)}</TableCell>
                     <TableCell>{lead.score}</TableCell>
                     <TableCell>
                       <Badge variant={lead.classification === 'hot' ? 'hot' : lead.classification === 'warm' ? 'warm' : 'cold'}>
-                        {lead.classification}
+                        {getClassificationLabel(lead.classification)}
                       </Badge>
                     </TableCell>
                     <TableCell>

@@ -68,6 +68,13 @@ describe('leads page contact email', () => {
     expect(emailLink).toHaveAttribute('href', 'mailto:contato@empresa.com.br')
   })
 
+  it('shows segment and classification labels in Brazilian Portuguese', async () => {
+    renderLeadsPage()
+
+    expect(await screen.findByText('Serviços')).toBeInTheDocument()
+    expect(screen.getByText('Quente')).toBeInTheDocument()
+  })
+
   it('requires confirmation before deleting one lead', async () => {
     renderLeadsPage()
 

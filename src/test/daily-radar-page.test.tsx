@@ -111,6 +111,8 @@ describe('daily radar page', () => {
     expect(screen.getByRole('region', { name: 'Resumo da prospecção automática' })).toHaveTextContent('Ativada')
     expect(screen.getByRole('region', { name: 'Resumo da prospecção automática' })).toHaveTextContent('Execução de hoje: concluída')
     expect(screen.getByRole('link', { name: 'Configurar' })).toHaveAttribute('href', '/settings')
+    expect(screen.getByText('Quente')).toBeInTheDocument()
+    expect(screen.getAllByText('Clínicas').length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: 'Gerar abordagem' })[0]).toHaveAttribute('href', '/companies/company-1#outreach')
     expect(screen.getAllByRole('link', { name: 'Ver lead' })).toHaveLength(2)
 

@@ -27,6 +27,7 @@ import {
   type WorkspaceRecommendation,
   type WorkspaceTask,
 } from '../../services/ai/aiSdrWorkspaceService'
+import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 const channelLabels = {
   email: 'E-mail',
@@ -337,7 +338,7 @@ export function AISDRPage() {
                         {lead.company_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{[lead.segment, lead.city].filter(Boolean).join(' · ') || 'Não informado'}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{[getSegmentLabel(lead.segment), lead.city].filter(Boolean).join(' · ') || 'Não informado'}</td>
                     <td className="px-4 py-3"><span className="font-semibold tabular-nums text-foreground">{lead.action_score}/100</span></td>
                     <td className="max-w-sm px-4 py-3 text-muted-foreground">{lead.opportunity || 'Oportunidade não informada'}</td>
                     <td className="px-4 py-3">

@@ -248,6 +248,7 @@ async function searchPlaces(query: string, apiKey: string, target: number, job: 
         },
         body: JSON.stringify({
           textQuery: query,
+          languageCode: 'pt-BR',
           pageSize: Math.min(20, target - places.length),
           ...(pageToken ? { pageToken } : {}),
         }),

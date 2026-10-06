@@ -15,6 +15,7 @@ import { useAIFeedback, useLeadFollowUp, useLeadIntelligence, useLeadOutreach } 
 import { prospectingMockMode } from '../../services/prospecting/prospectingService'
 import { getCompanyById } from '../../services/companies/companyService'
 import { getLeadByCompanyId } from '../../services/leads/leadService'
+import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 
 const channelLabels = {
   email: 'E-mail',
@@ -98,7 +99,7 @@ export function CompanyDetailPage() {
           <InfoLine icon={<Star aria-hidden="true" className="h-4 w-4" />} value={company.rating === null ? 'Avaliação não informada' : `${company.rating}/5 · ${company.review_count} avaliações`} />
           <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 sm:col-span-2">
             <span>Segmento</span>
-            <Badge variant="secondary">{company.category || 'Não informado'}</Badge>
+            <Badge variant="secondary">{getSegmentLabel(company.category) || 'Não informado'}</Badge>
           </div>
         </CardContent>
       </Card>

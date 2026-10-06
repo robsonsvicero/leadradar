@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
 import { leadScoreThresholds } from '../../services/prospecting/scoring'
+import { getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 import {
   getDailyRadarSnapshot,
   type DailyRadarLead,
@@ -202,7 +203,7 @@ export function DailyRadarPage() {
                 />
               </span>
             </label>
-            <FilterSelect label="Segmento" value={segment} onChange={setSegment} options={[allFilter, ...segments]} />
+            <FilterSelect label="Segmento" value={segment} onChange={setSegment} options={[allFilter, ...segments]} formatLabel={(value) => value === allFilter ? value : getSegmentLabel(value)} />
             <FilterSelect label="Estado" value={selectedState} onChange={setSelectedState} options={[allFilter, ...states]} />
             <FilterSelect label="Status" value={status} onChange={(value) => setStatus(value as (typeof leadStatuses)[number])} options={[...leadStatuses]} formatLabel={(value) => value === allFilter ? value : leadStatusLabels[value] ?? value} />
             <label className="text-xs font-medium text-muted-foreground">
@@ -395,7 +396,7 @@ function DailyOpportunityCard({ lead }: { lead: DailyRadarLead }) {
             >
               {lead.company_name}
             </Link>
-            <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{lead.segment || 'Segmento não informado'}</p>
+            <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{getSegmentLabel(lead.segment) || 'Segmento não informado'}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className={`grid h-9 w-9 place-items-center rounded-full border-2 text-[11px] font-bold tabular-nums ${scoreTone}`} aria-label={`Score ${lead.score} de 100`}>

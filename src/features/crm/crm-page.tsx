@@ -11,6 +11,7 @@ import { Input } from '../../components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Skeleton } from '../../components/ui/skeleton'
 import { getPipelineStageColor, getPipelineWorkspace, updateLeadOwner, updateLeadPipelineStage, type PipelineOutcome } from '../../services/crm/pipelineService'
+import { getClassificationLabel } from '../../services/prospecting/prospectingLabels'
 import type { Lead, PipelineStage } from '../../types'
 
 const unassignedFilter = '__unassigned'
@@ -216,7 +217,7 @@ function LeadPipelineCard({
           {lead.company_name}
         </Link>
         <Badge variant={lead.classification === 'hot' ? 'hot' : lead.classification === 'warm' ? 'warm' : 'cold'}>
-          {lead.classification === 'hot' ? 'Quente' : lead.classification === 'warm' ? 'Morno' : 'Frio'}
+          {getClassificationLabel(lead.classification)}
         </Badge>
       </div>
       <p className="mt-2 text-xs tabular-nums text-muted-foreground">Action Score {lead.action_score} · ICP {lead.icp_match}</p>

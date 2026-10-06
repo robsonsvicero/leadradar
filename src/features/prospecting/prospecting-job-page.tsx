@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Progress } from '../../components/ui/progress'
 import { Skeleton } from '../../components/ui/skeleton'
 import { prospectingConfig } from '../../config/prospecting'
+import { getClassificationLabel, getSegmentLabel } from '../../services/prospecting/prospectingLabels'
 import {
   cancelProspectingJob,
   getProspectingJob,
@@ -101,7 +102,7 @@ export function ProspectingJobPage() {
 
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-3xl font-semibold text-foreground">Prospecção de {currentJob.segment}</h2>
+          <h2 className="text-3xl font-semibold text-foreground">Prospecção de {getSegmentLabel(currentJob.segment)}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{currentJob.location} · até {currentJob.target_quantity} empresas</p>
         </div>
         <Badge variant={stateVariant}>{currentJob.status === 'running' ? 'Em andamento' : currentJob.status === 'queued' ? 'Na fila' : currentJob.status === 'completed' ? 'Concluída' : currentJob.status === 'failed' ? 'Falhou' : 'Cancelada'}</Badge>
@@ -158,9 +159,9 @@ export function ProspectingJobPage() {
         <StatCard label="Empresas encontradas" value={currentJob.companies_found} icon={<Building2 aria-hidden="true" className="h-4 w-4" />} />
         <StatCard label="Empresas únicas" value={currentJob.companies_unique} icon={<Building2 aria-hidden="true" className="h-4 w-4" />} />
         <StatCard label="Empresas analisadas" value={currentJob.companies_analyzed} icon={<Building2 aria-hidden="true" className="h-4 w-4" />} />
-        <StatCard label="Hot" value={currentJob.hot_leads} />
-        <StatCard label="Warm" value={currentJob.warm_leads} />
-        <StatCard label="Cold" value={currentJob.cold_leads} />
+        <StatCard label="Leads quentes" value={currentJob.hot_leads} />
+        <StatCard label="Leads mornos" value={currentJob.warm_leads} />
+        <StatCard label="Leads frios" value={currentJob.cold_leads} />
         <StatCard label="Erros parciais" value={currentJob.error_count} icon={<CircleAlert aria-hidden="true" className="h-4 w-4" />} />
       </div>
 
@@ -184,7 +185,7 @@ export function ProspectingJobPage() {
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h4 className="font-semibold text-foreground">{lead.company_name}</h4>
-                  <p className="mt-1 text-sm text-muted-foreground">{lead.segment} · {lead.city}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{getSegmentLabel(lead.segment)} · {lead.city}</p>
                   <p className="mt-1 text-sm text-foreground"><strong>Oportunidade técnica:</strong> {lead.opportunity}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{lead.opportunity_reason}</p>
                   {lead.target_fit ? (
@@ -201,7 +202,7 @@ export function ProspectingJobPage() {
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-semibold text-foreground">Score {lead.score}</span>
                   <Badge variant={lead.classification === 'hot' ? 'hot' : lead.classification === 'warm' ? 'warm' : 'cold'}>
-                    {lead.classification}
+                    {getClassificationLabel(lead.classification)}
                   </Badge>
                 </div>
               </CardContent>
