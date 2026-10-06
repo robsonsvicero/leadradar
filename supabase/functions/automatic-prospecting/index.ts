@@ -51,13 +51,18 @@ deno.serve(async (request) => {
   if (request.method !== 'POST') return response({ error: 'Método não permitido.' }, 405)
 
   const supabaseUrl = deno.env.get('SUPABASE_URL')
-  const serviceRoleKey = deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const anonKey = deno.env.get('SUPABASE_ANON_KEY')
-  if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+  const requestAuthorization = request.headers.get('Authorization')
+  const serviceRoleKey = requestAuthorization?.replace(/^Bearer\s+/i, '') ?? deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const cronSecret = deno.env.get('AUTOMATIC_PROSPECTING_CRON_SECRET')
+  if (!supabaseUrl || !serviceRoleKey || !cronSecret) {
     return response({ error: 'A configuração do Supabase Edge Function está incompleta.' }, 500)
   }
-  if (request.headers.get('Authorization') !== `Bearer ${serviceRoleKey}`) {
+  if (request.headers.get('x-automatic-prospecting-secret') !== cronSecret) {
     return response({ error: 'Acesso negado.' }, 401)
+  }
+  const apiKey = request.headers.get('apikey')
+  if (!requestAuthorization || !apiKey) {
+    return response({ error: 'A autenticação do agendador está incompleta.' }, 401)
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey, {
@@ -117,7 +122,8 @@ deno.serve(async (request) => {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${serviceRoleKey}`,
-          apikey: anonKey,
+          apikey: apiKey,
+          'x-automatic-prospecting-secret': cronSecret,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

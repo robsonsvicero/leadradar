@@ -714,12 +714,16 @@ async function enqueueNextWorker(
   supabaseUrl: string,
   anonKey: string,
   authorization: string,
+  automaticProspectingCronSecret?: string,
 ) {
   const result = await fetch(`${supabaseUrl}/functions/v1/prospecting-search`, {
     method: 'POST',
     headers: {
       Authorization: authorization,
       apikey: anonKey,
+      ...(automaticProspectingCronSecret
+        ? { 'x-automatic-prospecting-secret': automaticProspectingCronSecret }
+        : {}),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ action: 'continue', jobId }),
@@ -993,6 +997,7 @@ async function processJobStep(
   supabaseUrl: string,
   anonKey: string,
   authorization: string,
+  automaticProspectingCronSecret?: string,
 ) {
   const workerId = crypto.randomUUID()
   const { data: claimed, error: claimError } = await admin.rpc('claim_prospecting_job', {
@@ -1038,7 +1043,7 @@ async function processJobStep(
 
   if (shouldContinue) {
     try {
-      await enqueueNextWorker(jobId, supabaseUrl, anonKey, authorization)
+      await enqueueNextWorker(jobId, supabaseUrl, anonKey, authorization, automaticProspectingCronSecret)
     } catch {
       log('prospecting_worker_reschedule_failed', { job_id: jobId })
     }
@@ -1058,6 +1063,7 @@ async function createScheduledJob(
   supabaseUrl: string,
   anonKey: string,
   authorization: string,
+  automaticProspectingCronSecret?: string,
 ) {
   const { data: run, error: runError } = await admin
     .from('automatic_prospecting_runs')
@@ -1165,7 +1171,16 @@ async function createScheduledJob(
     .eq('id', runId)
   if (linkError) log('automatic_prospecting_run_job_link_failed', { run_id: runId, job_id: job.id })
 
-  await scheduleJobStep(processJobStep(admin, job.id, googleApiKey, pageSpeedKey, supabaseUrl, anonKey, authorization))
+  await scheduleJobStep(processJobStep(
+    admin,
+    job.id,
+    googleApiKey,
+    pageSpeedKey,
+    supabaseUrl,
+    anonKey,
+    authorization,
+    automaticProspectingCronSecret,
+  ))
   log('automatic_prospecting_started', { job_id: job.id, organization_id: organizationId, run_id: runId })
   return response({ job }, 202)
 }
@@ -1186,6 +1201,7 @@ deno.serve(async (request) => {
   const anonKey = deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!supabaseUrl || !anonKey || !serviceRoleKey) return response({ error: 'A configuração do Supabase Edge Function está incompleta.' }, 500)
+  const automaticProspectingCronSecret = deno.env.get('AUTOMATIC_PROSPECTING_CRON_SECRET')
 
   const authorization = request.headers.get('Authorization')
   if (!authorization) return response({ error: 'Autenticação obrigatória.' }, 401)
@@ -1199,15 +1215,23 @@ deno.serve(async (request) => {
     return response({ error: 'O corpo da requisição precisa ser JSON válido.' }, 400)
   }
 
+  const cancelInput = cancelSchema.safeParse(input)
+  const continuation = continueSchema.safeParse(input)
+  const scheduledInput = scheduledCreateSchema.safeParse(input)
+  const isAutomaticProspectingRequest = Boolean(
+    automaticProspectingCronSecret &&
+    request.headers.get('x-automatic-prospecting-secret') === automaticProspectingCronSecret &&
+    (continuation.success || scheduledInput.success),
+  )
+  const isPrivilegedRequest = isServiceRoleRequest || isAutomaticProspectingRequest
   const userClient = makeClient(supabaseUrl, anonKey, authorization)
-  const authData = isServiceRoleRequest ? null : await userClient.auth.getUser().then(({ data, error }) =>
+  const authData = isPrivilegedRequest ? null : await userClient.auth.getUser().then(({ data, error }) =>
     error || !data.user ? null : data,
   )
-  if (!isServiceRoleRequest && !authData?.user) return response({ error: 'Sessão inválida ou expirada.' }, 401)
+  if (!isPrivilegedRequest && !authData?.user) return response({ error: 'Sessão inválida ou expirada.' }, 401)
 
-  const cancelInput = cancelSchema.safeParse(input)
   if (cancelInput.success) {
-    if (isServiceRoleRequest) return response({ error: 'Acesso negado.' }, 403)
+    if (isPrivilegedRequest) return response({ error: 'Acesso negado.' }, 403)
     const { data: job, error } = await admin.from('prospecting_jobs').select('*').eq('id', cancelInput.data.jobId).maybeSingle()
     if (error || !job) return response({ error: 'Prospecção não encontrada.' }, 404)
     try {
@@ -1227,7 +1251,6 @@ deno.serve(async (request) => {
     return response({ ok: true })
   }
 
-  const continuation = continueSchema.safeParse(input)
   if (continuation.success) {
     const { data: job, error } = await admin
       .from('prospecting_jobs')
@@ -1236,7 +1259,7 @@ deno.serve(async (request) => {
       .maybeSingle()
     if (error || !job) return response({ error: 'Prospecção não encontrada.' }, 404)
     try {
-      if (!isServiceRoleRequest) await verifyMembership(userClient, job.organization_id, authData!.user.id)
+      if (!isPrivilegedRequest) await verifyMembership(userClient, job.organization_id, authData!.user.id)
     } catch (membershipError) {
       return response({ error: membershipError instanceof Error ? membershipError.message : 'Acesso negado.' }, 403)
     }
@@ -1245,13 +1268,21 @@ deno.serve(async (request) => {
     const googleApiKey = deno.env.get('GOOGLE_PLACES_API_KEY')
     if (!googleApiKey) return response({ error: 'Google Places não está configurado.' }, 503)
     const pageSpeedKey = deno.env.get('PAGESPEED_API_KEY')
-    await scheduleJobStep(processJobStep(admin, job.id, googleApiKey, pageSpeedKey, supabaseUrl, anonKey, authorization))
+    await scheduleJobStep(processJobStep(
+      admin,
+      job.id,
+      googleApiKey,
+      pageSpeedKey,
+      supabaseUrl,
+      anonKey,
+      authorization,
+      isAutomaticProspectingRequest ? automaticProspectingCronSecret : undefined,
+    ))
     return response({ ok: true, scheduled: true }, 202)
   }
 
-  const scheduledInput = scheduledCreateSchema.safeParse(input)
   if (scheduledInput.success) {
-    if (!isServiceRoleRequest) return response({ error: 'Acesso negado.' }, 401)
+    if (!isPrivilegedRequest) return response({ error: 'Acesso negado.' }, 401)
     const googleApiKey = deno.env.get('GOOGLE_PLACES_API_KEY')
     if (!googleApiKey) return response({ error: 'Google Places não está configurado.' }, 503)
     return createScheduledJob(
@@ -1265,8 +1296,9 @@ deno.serve(async (request) => {
       googleApiKey,
       deno.env.get('PAGESPEED_API_KEY'),
       supabaseUrl,
-      anonKey,
+      request.headers.get('apikey') ?? anonKey,
       authorization,
+      isAutomaticProspectingRequest ? automaticProspectingCronSecret : undefined,
     )
   }
 
