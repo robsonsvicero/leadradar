@@ -75,6 +75,43 @@ describe('leads page contact email', () => {
     expect(screen.getByText('Quente')).toBeInTheDocument()
   })
 
+  it('shows leads researched today as new and leads from previous days as old', async () => {
+    const today = new Date()
+    today.setHours(12, 0, 0, 0)
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    vi.mocked(getLeads).mockResolvedValue([
+      { ...lead, id: 'lead-today', created_at: today.toISOString() },
+      { ...lead, id: 'lead-yesterday', created_at: yesterday.toISOString() },
+    ])
+
+    renderLeadsPage()
+
+    expect(await screen.findAllByText('Novo')).toHaveLength(1)
+    expect(screen.getAllByText('Antigo')).toHaveLength(1)
+  })
+
+  it('sorts each requested column and toggles ascending and descending order', async () => {
+    vi.mocked(getLeads).mockResolvedValue([
+      { ...lead, id: 'lead-z', company_name: 'Zeta', score: 50, segment: 'Clínicas', opportunity: 'Site B' },
+      { ...lead, id: 'lead-a', company_name: 'Alfa', score: 90, segment: 'Academias', opportunity: 'Site A' },
+    ])
+
+    renderLeadsPage()
+
+    await screen.findByRole('link', { name: 'Alfa' })
+    fireEvent.click(screen.getByRole('button', { name: 'Ordenar por Empresa' }))
+    expect(screen.getAllByRole('row').slice(1).map((row) => row.querySelector('a')?.textContent)).toEqual(['Alfa', 'Zeta'])
+
+    for (const column of ['Segmento', 'Score', 'Classificação', 'Oportunidade', 'Status', 'Data']) {
+      const sortButton = screen.getByRole('button', { name: `Ordenar por ${column}` })
+      fireEvent.click(sortButton)
+      expect(sortButton.closest('th')).toHaveAttribute('aria-sort', 'ascending')
+      fireEvent.click(sortButton)
+      expect(sortButton.closest('th')).toHaveAttribute('aria-sort', 'descending')
+    }
+  })
+
   it('requires confirmation before deleting one lead', async () => {
     renderLeadsPage()
 

@@ -1,4 +1,4 @@
-import { Mail, Search, Star, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Mail, Search, Star, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -22,6 +22,16 @@ type PendingDeletion = {
   companyNames: string[]
 }
 
+type SortColumn = 'company' | 'segment' | 'score' | 'classification' | 'opportunity' | 'status' | 'date'
+type SortDirection = 'asc' | 'desc'
+
+function isLeadNewToday(createdAt: string, year: number, month: number, day: number) {
+  const createdDate = new Date(createdAt)
+  return createdDate.getFullYear() === year
+    && createdDate.getMonth() === month
+    && createdDate.getDate() === day
+}
+
 export function LeadsPage() {
   const queryClient = useQueryClient()
   const leadsQuery = useQuery({ queryKey: ['leads'], queryFn: getLeads, retry: false })
@@ -29,8 +39,14 @@ export function LeadsPage() {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [classificationFilter, setClassificationFilter] = useState('all')
+  const [sortColumn, setSortColumn] = useState<SortColumn>('date')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(() => new Set())
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
+  const today = new Date()
+  const currentDay = today.getDate()
+  const currentMonth = today.getMonth()
+  const currentYear = today.getFullYear()
   const deleteMutation = useMutation({
     mutationFn: deleteLeads,
     onSuccess: async (_data, deletedIds) => {
@@ -52,15 +68,69 @@ export function LeadsPage() {
   })
 
   const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
+    const filtered = leads.filter((lead) => {
       const byQuery = !query || lead.company_name.toLowerCase().includes(query.toLowerCase())
       const byStatus = statusFilter === 'all' || lead.status === statusFilter
       const byClassification = classificationFilter === 'all' || lead.classification === classificationFilter
       return byQuery && byStatus && byClassification
     })
-  }, [classificationFilter, leads, query, statusFilter])
+
+    return filtered.sort((first, second) => {
+      let comparison = 0
+      switch (sortColumn) {
+        case 'company':
+          comparison = first.company_name.localeCompare(second.company_name, 'pt-BR')
+          break
+        case 'segment':
+          comparison = getSegmentLabel(first.segment).localeCompare(getSegmentLabel(second.segment), 'pt-BR')
+          break
+        case 'score':
+          comparison = first.score - second.score
+          break
+        case 'classification':
+          comparison = getClassificationLabel(first.classification).localeCompare(getClassificationLabel(second.classification), 'pt-BR')
+          break
+        case 'opportunity':
+          comparison = first.opportunity.localeCompare(second.opportunity, 'pt-BR')
+          break
+        case 'status':
+          comparison = Number(isLeadNewToday(first.created_at, currentYear, currentMonth, currentDay))
+            - Number(isLeadNewToday(second.created_at, currentYear, currentMonth, currentDay))
+          break
+        case 'date':
+          comparison = new Date(first.created_at).getTime() - new Date(second.created_at).getTime()
+          break
+      }
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
+  }, [classificationFilter, currentDay, currentMonth, currentYear, leads, query, sortColumn, sortDirection, statusFilter])
   const allVisibleSelected = filteredLeads.length > 0 && filteredLeads.every((lead) => selectedLeadIds.has(lead.id))
   const someVisibleSelected = filteredLeads.some((lead) => selectedLeadIds.has(lead.id))
+
+  const toggleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')
+      return
+    }
+    setSortColumn(column)
+    setSortDirection('asc')
+  }
+
+  const sortableHeader = (column: SortColumn, label: string) => (
+    <button
+      type="button"
+      onClick={() => toggleSort(column)}
+      className="inline-flex items-center gap-1.5 text-left font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      aria-label={`Ordenar por ${label}`}
+    >
+      {label}
+      {sortColumn === column ? (
+        sortDirection === 'asc'
+          ? <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
+          : <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
+      ) : null}
+    </button>
+  )
 
   const toggleLeadSelection = (leadId: string) => {
     setSelectedLeadIds((current) => {
@@ -141,13 +211,14 @@ export function LeadsPage() {
 
             <Select
               value={statusFilter}
+              aria-label="Filtrar por etapa do lead"
               onValueChange={(value) => {
                 setStatusFilter(value)
                 setSelectedLeadIds(new Set())
               }}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Etapa do lead" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
@@ -226,13 +297,27 @@ export function LeadsPage() {
                       className="h-4 w-4 rounded border-border accent-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     />
                   </TableHead>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>Segmento</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Classificação</TableHead>
-                  <TableHead>Oportunidade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead aria-sort={sortColumn === 'company' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('company', 'Empresa')}
+                  </TableHead>
+                  <TableHead aria-sort={sortColumn === 'segment' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('segment', 'Segmento')}
+                  </TableHead>
+                  <TableHead aria-sort={sortColumn === 'score' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('score', 'Score')}
+                  </TableHead>
+                  <TableHead aria-sort={sortColumn === 'classification' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('classification', 'Classificação')}
+                  </TableHead>
+                  <TableHead aria-sort={sortColumn === 'opportunity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('opportunity', 'Oportunidade')}
+                  </TableHead>
+                  <TableHead aria-sort={sortColumn === 'status' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('status', 'Status')}
+                  </TableHead>
+                  <TableHead aria-sort={sortColumn === 'date' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    {sortableHeader('date', 'Data')}
+                  </TableHead>
                   <TableHead className="w-12 text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -283,7 +368,11 @@ export function LeadsPage() {
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell>{lead.status}</TableCell>
+                    <TableCell>
+                      <Badge variant={isLeadNewToday(lead.created_at, currentYear, currentMonth, currentDay) ? 'success' : 'cold'}>
+                        {isLeadNewToday(lead.created_at, currentYear, currentMonth, currentDay) ? 'Novo' : 'Antigo'}
+                      </Badge>
+                    </TableCell>
                     <TableCell>{new Date(lead.created_at).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell className="text-right">
                       <Button
