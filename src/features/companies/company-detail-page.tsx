@@ -86,7 +86,7 @@ export function CompanyDetailPage() {
         <p className="mt-2 text-sm text-muted-foreground">Perfil da empresa, evidências digitais e recomendações comerciais.</p>
       </header>
 
-      <Card>
+      <Card id="outreach">
         <CardHeader>
           <CardTitle>Informações da empresa</CardTitle>
           <CardDescription>Dados empresariais disponíveis no cadastro do lead.</CardDescription>

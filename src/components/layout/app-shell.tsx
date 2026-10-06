@@ -1,4 +1,4 @@
-import { Activity, Bell, Bot, BriefcaseBusiness, Building2, CalendarDays, FileText, Inbox, LayoutDashboard, ListTodo, LogOut, Menu, Settings, Sparkles, Users, Workflow, X } from 'lucide-react'
+import { Activity, Bell, Bot, BriefcaseBusiness, Building2, CalendarDays, FileText, Inbox, LayoutDashboard, ListTodo, LogOut, Menu, Radar, Settings, Sparkles, Users, Workflow, X } from 'lucide-react'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
@@ -15,6 +15,7 @@ const navItems: Array<{ label: string; to: string; icon: typeof LayoutDashboard;
   { label: 'AI SDR', to: '/ai-sdr', icon: Bot, feature: 'aiSdr' },
   { label: 'Uso de IA', to: '/ai-usage', icon: Activity, feature: 'advancedAnalytics' },
   { label: 'Radar', to: '/prospecting/new', icon: Sparkles },
+  { label: 'Radar Diário', to: '/radar-diario', icon: Radar },
   { label: 'Leads', to: '/leads', icon: Users },
   { label: 'Empresas', to: '/companies', icon: Building2 },
   { label: 'Pipeline', to: '/pipeline', icon: BriefcaseBusiness },

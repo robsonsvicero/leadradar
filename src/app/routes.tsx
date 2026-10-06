@@ -18,6 +18,7 @@ const IntegrationsPage = lazy(() => import('../features/integrations/integration
 const LeadsPage = lazy(() => import('../features/leads/leads-page').then((module) => ({ default: module.LeadsPage })))
 const NewProspectingPage = lazy(() => import('../features/prospecting/new-prospecting-page').then((module) => ({ default: module.NewProspectingPage })))
 const ProspectingJobPage = lazy(() => import('../features/prospecting/prospecting-job-page').then((module) => ({ default: module.ProspectingJobPage })))
+const DailyRadarPage = lazy(() => import('../features/prospecting/daily-radar-page').then((module) => ({ default: module.DailyRadarPage })))
 const SettingsPage = lazy(() => import('../features/settings/settings-page').then((module) => ({ default: module.SettingsPage })))
 const TasksPage = lazy(() => import('../features/tasks/tasks-page').then((module) => ({ default: module.TasksPage })))
 const InboxPage = lazy(() => import('../features/inbox/inbox-page').then((module) => ({ default: module.InboxPage })))
@@ -98,6 +99,7 @@ export function AppRoutes() {
             <Route path="/ai-usage" element={featureFlags.advancedAnalytics ? <AIUsagePage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/prospecting/new" element={<NewProspectingPage />} />
             <Route path="/prospecting/jobs/:jobId" element={<ProspectingJobPage />} />
+            <Route path="/radar-diario" element={<DailyRadarPage />} />
             <Route path="/leads" element={<LeadsPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
             <Route path="/companies/:id" element={<CompanyDetailPage />} />

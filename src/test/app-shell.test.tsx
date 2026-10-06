@@ -48,6 +48,7 @@ describe('app shell navigation', () => {
     expect(sidebar).toHaveClass('fixed', 'h-dvh', 'flex-col')
     expect(screen.getByRole('navigation')).toHaveClass('overflow-y-auto', 'overscroll-contain')
     expect(screen.getByRole('main').parentElement).toHaveClass('md:ml-72')
+    expect(screen.getByRole('link', { name: 'Radar Diário' })).toHaveAttribute('href', '/radar-diario')
   })
 
   it('shows the animated radar logo beside the product name', () => {
