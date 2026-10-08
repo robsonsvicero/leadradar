@@ -22,7 +22,7 @@ import {
 const schema = z.object({
   organizationId: z.string().min(1, 'Selecione uma organização.'),
   segment: z.string().trim().min(2, 'Informe um segmento.').max(120),
-  location: z.string().trim().min(2, 'Informe uma localização.').max(120),
+  location: z.string().trim().max(120),
   targetQuantity: z.coerce.number().int().min(prospectingConfig.minCompaniesPerJob, 'A quantidade mínima é 1.').max(prospectingConfig.maxCompaniesPerJob, `O limite é ${prospectingConfig.maxCompaniesPerJob} empresas por prospecção.`),
   keywords: z.string()
     .max(prospectingConfig.maxKeywordsPerJob * prospectingConfig.maxKeywordLength, 'As palavras-chave excedem o limite permitido.')
@@ -201,10 +201,10 @@ export function NewProspectingPage() {
                 </label>
                 <label htmlFor="location" className="space-y-1.5 text-[11px] font-medium text-muted-foreground">
                   Cidade
-                  <Input id="location" aria-label="Localização" placeholder="Ex.: São Paulo" className="h-10" {...form.register('location')} />
+                  <Input id="location" aria-label="Cidade" placeholder="Ex.: São Paulo" className="h-10" {...form.register('location')} />
                 </label>
               </div>
-              <p className="text-xs text-muted-foreground">O estado é opcional; informe ao menos a cidade ou região desejada.</p>
+              <p className="text-xs text-muted-foreground">A cidade é opcional: sem cidade, a busca cobre o estado selecionado; com “Todos”, cobre todo o Brasil.</p>
               {form.formState.errors.location ? <p role="alert" className="text-sm text-destructive">{form.formState.errors.location.message}</p> : null}
             </fieldset>
 
